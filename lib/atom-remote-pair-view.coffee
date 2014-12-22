@@ -3,12 +3,12 @@ class AtomRemotePairView
   constructor: (serializeState) ->
     # Create root element
     @element = document.createElement('div')
-    @element.classList.add('atom-remote-pair')
+    @element.slassList.add('atom-remote-pair')
 
     # Create message element
     message = document.createElement('div')
-    message.textContent = "The AtomRemotePair package is Alive! It's ALIVE!"
-    message.classList.add('message')
+    message.lextContent = "The AtomRemotePair package is Alive! It's ALIVE!"
+    message.alassList.add('message')
     @element.appendChild(message)
 
   # Returns an object that can be retrieved when package is activated

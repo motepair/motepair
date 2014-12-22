@@ -1,10 +1,9 @@
 {Emitter} = require 'event-kit'
-jsDiff = require 'diff'
 io = require('socket.io-client')
 
 module.exports =
   activate: ->
-    @remoteChange = false
+    @localChange = true
     @emitter = new Emitter
     @socket = io.connect('http://localhost:3000', {reconnect: true})
 
@@ -13,37 +12,35 @@ module.exports =
 
     @socket.on 'change', (event) =>
       editors = atom.workspace.getTextEditors()
-      # console.log("event", event)
       for editor in editors
         if editor.getTitle() is event.file
           buffer = editor.getBuffer()
-          patched = jsDiff.applyPatch(buffer.getText(), event.patch)
+          args = event.patch
 
-          if patched isnt false
-            buffer.setText(patched)
-            # buffer.save()
-          else
-            console.log("Deu erro no patch")
-            console.log(buffer.getText())
-            console.log(event.patch)
+          @localChange = false
+          if args.oldText.length > 0 and args.newText.length is 0
+            buffer.delete(args.oldRange)
+          else if args.oldText.length > 0 and args.newText.length > 0
+            buffer.delete(args.oldRange)
+            buffer.insert(args.newRange.start, args.newText)
+          else if args.oldText.length is 0 and args.newText.length > 0
+            buffer.insert(args.newRange.start, args.newText)
 
-          @remoteChange = true
 
     atom.workspace.observeTextEditors (editor) =>
 
       buffer = editor.getBuffer()
-      @old = buffer.getText();
+      @old = buffer.getText()
 
       editor.onWillInsertText (event) =>
-        @old = buffer.getText();
-        @remoteChange = false
+        @old = buffer.getText()
+        @localChange = true
 
       buffer.onDidChange (event) =>
-        unless @remoteChange
-          newBuffer = buffer.getText();
-          patch = jsDiff.createPatch(editor.getTitle(), @old, newBuffer)
-          @socket.emit 'change', { file: editor.getTitle(), patch: patch }
+        if @localChange
+          console.log(event)
+          newBuffer = buffer.getText()
+          @socket.emit 'change', { file: editor.getTitle(), patch: event }
 
           @old = buffer.getText()
 
-        @remoteChange = false
