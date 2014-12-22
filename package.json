@@ -1,0 +1,19 @@
+{
+  "name": "atom-remote-pair",
+  "main": "./lib/atom-remote-pair",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "activationCommands": {
+    "atom-workspace": "atom-remote-pair:toggle"
+  },
+  "repository": "https://github.com/atom/atom-remote-pair",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+    "diff": "^1.2.0",
+    "event-kit": "^0.8.1",
+    "socket.io-client": "^1.2.1"
+  }
+}
