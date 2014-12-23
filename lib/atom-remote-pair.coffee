@@ -1,16 +1,19 @@
 {Emitter} = require 'event-kit'
-io = require('socket.io-client')
+WebSocket = require('ws')
 
 module.exports =
   activate: ->
+    debugger
     @localChange = true
     @emitter = new Emitter
-    @socket = io.connect('http://localhost:3000', {reconnect: true})
+    @ws = new WebSocket('ws://localhost:4444')
 
-    @socket.on 'connect', (socket) ->
+    @ws.on 'open', ->
       console.log('Connected!')
 
-    @socket.on 'change', (event) =>
+    @ws.on 'message', (data) =>
+      console.log(data)
+      event = JSON.parse(data)
       editors = atom.workspace.getTextEditors()
       for editor in editors
         if editor.getTitle() is event.file
@@ -40,7 +43,7 @@ module.exports =
         if @localChange
           console.log(event)
           newBuffer = buffer.getText()
-          @socket.emit 'change', { file: editor.getTitle(), patch: event }
+          data = JSON.stringify({ file: editor.getTitle(), patch: event })
+          @ws.send(data)
 
           @old = buffer.getText()
-
