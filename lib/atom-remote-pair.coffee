@@ -3,7 +3,6 @@ WebSocket = require('ws')
 
 module.exports =
   activate: ->
-    debugger
     @localChange = true
     @emitter = new Emitter
     @ws = new WebSocket('ws://localhost:4444')
@@ -12,22 +11,25 @@ module.exports =
       console.log('Connected!')
 
     @ws.on 'message', (data) =>
-      console.log(data)
       event = JSON.parse(data)
-      editors = atom.workspace.getTextEditors()
-      for editor in editors
-        if editor.getTitle() is event.file
-          buffer = editor.getBuffer()
-          args = event.patch
+      if event.session?
+        console.log("Session code received: " + event.session)
+        @uid = event.session
+      else
+        editors = atom.workspace.getTextEditors()
+        for editor in editors
+          if editor.getTitle() is event.file
+            buffer = editor.getBuffer()
+            args = event.patch
 
-          @localChange = false
-          if args.oldText.length > 0 and args.newText.length is 0
-            buffer.delete(args.oldRange)
-          else if args.oldText.length > 0 and args.newText.length > 0
-            buffer.delete(args.oldRange)
-            buffer.insert(args.newRange.start, args.newText)
-          else if args.oldText.length is 0 and args.newText.length > 0
-            buffer.insert(args.newRange.start, args.newText)
+            @localChange = false
+            if args.oldText.length > 0 and args.newText.length is 0
+              buffer.delete(args.oldRange)
+            else if args.oldText.length > 0 and args.newText.length > 0
+              buffer.delete(args.oldRange)
+              buffer.insert(args.newRange.start, args.newText)
+            else if args.oldText.length is 0 and args.newText.length > 0
+              buffer.insert(args.newRange.start, args.newText)
 
 
     atom.workspace.observeTextEditors (editor) =>
@@ -43,7 +45,7 @@ module.exports =
         if @localChange
           console.log(event)
           newBuffer = buffer.getText()
-          data = JSON.stringify({ file: editor.getTitle(), patch: event })
+          data = JSON.stringify({ sessionToken: @uid, file: editor.getTitle(), patch: event })
           @ws.send(data)
 
           @old = buffer.getText()
