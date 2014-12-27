@@ -1,35 +1,33 @@
 {Emitter} = require 'event-kit'
-WebSocket = require('ws')
+WsEmitClient = require('./ws/ws-emit-client.js')
 
 module.exports =
   activate: ->
     @localChange = true
     @emitter = new Emitter
-    @ws = new WebSocket('ws://localhost:4444')
+    @ws = new WsEmitClient('ws://localhost:3000')
 
     @ws.on 'open', ->
       console.log('Connected!')
 
-    @ws.on 'message', (data) =>
-      event = JSON.parse(data)
-      if event.session?
-        console.log("Session code received: " + event.session)
-        @uid = event.session
-      else
-        editors = atom.workspace.getTextEditors()
-        for editor in editors
-          if editor.getTitle() is event.file
-            buffer = editor.getBuffer()
-            args = event.patch
+    @ws.on 'change', (event) =>
+      console.log("remote change", event)
 
-            @localChange = false
-            if args.oldText.length > 0 and args.newText.length is 0
-              buffer.delete(args.oldRange)
-            else if args.oldText.length > 0 and args.newText.length > 0
-              buffer.delete(args.oldRange)
-              buffer.insert(args.newRange.start, args.newText)
-            else if args.oldText.length is 0 and args.newText.length > 0
-              buffer.insert(args.newRange.start, args.newText)
+      editors = atom.workspace.getTextEditors()
+
+      for editor in editors
+        if editor.getTitle() is event.file
+          buffer = editor.getBuffer()
+          args = event.patch
+
+          @localChange = false
+          if args.oldText.length > 0 and args.newText.length is 0
+            buffer.delete(args.oldRange)
+          else if args.oldText.length > 0 and args.newText.length > 0
+            buffer.delete(args.oldRange)
+            buffer.insert(args.newRange.start, args.newText)
+          else if args.oldText.length is 0 and args.newText.length > 0
+            buffer.insert(args.newRange.start, args.newText)
 
 
     atom.workspace.observeTextEditors (editor) =>
@@ -43,9 +41,7 @@ module.exports =
 
       buffer.onDidChange (event) =>
         if @localChange
-          console.log(event)
+          console.log("local change", event)
           newBuffer = buffer.getText()
-          data = JSON.stringify({ sessionToken: @uid, file: editor.getTitle(), patch: event })
-          @ws.send(data)
-
+          @ws.write 'change', { file: editor.getTitle(), patch: event }
           @old = buffer.getText()
