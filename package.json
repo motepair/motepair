@@ -11,6 +11,7 @@
   "engines": {
     "atom": ">0.50.0"
   },
+  "activationEvents": ["remote-pair:action"],
   "dependencies": {
     "event-kit": "^0.8.1",
     "ws": "^0.6.3",
