@@ -17,7 +17,7 @@ module.exports =
     @ws.on 'close-file', (event) =>
       @localOpening = false
       closedItem = null
-         
+
       for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
         closedItem = item
 
@@ -25,6 +25,9 @@ module.exports =
 
       activePane.destroyItem(closedItem)
 
+    @ws.on 'change-file', (event) =>
+      @localOpening = false
+      atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
 
     @ws.on 'open-file', (event) =>
       @localOpening = false
@@ -92,7 +95,15 @@ module.exports =
 
     atom.workspace.onWillDestroyPaneItem (event) =>
       if @localOpening
-        console.log("closing local", event)
         @ws.write 'close-file', {path: @project.relativize(event.item.getPath())}
 
       @localOpening = true
+
+
+    atom.workspace.onDidChangeActivePaneItem (event) =>
+      if @localOpening
+        @ws.write 'change-file', {path: @project.relativize(event.getPath())}
+
+      @localOpening = true
+
+
