@@ -5,7 +5,7 @@ module.exports =
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
     @localChange = true
-    @localSelection = true
+    @localSelection = false
     @emitter = new Emitter
     @ws = new WsEmitClient('ws://localhost:3000')
 
@@ -30,6 +30,8 @@ module.exports =
         else if args.oldText.length is 0 and args.newText.length > 0
           buffer.insert(args.newRange.start, args.newText)
 
+        editor.getSelections()[0].clear()
+
     @ws.on 'selection', (event) =>
       editors = atom.workspace.getTextEditors()
 
@@ -41,11 +43,15 @@ module.exports =
 
     atom.workspace.observeTextEditors (editor) =>
 
+      editor.onDidChangeCursorPosition (event) =>
+        @localSelection = !event.textChanged
+
       editor.onDidChangeSelectionRange (event) =>
         if @localSelection
           @ws.write 'selection', { file: editor.getTitle(), range: event.newBufferRange }
 
       editor.onWillInsertText (event) =>
+        @localSelection = false
         @old = buffer.getText()
         @localChange = true
 
@@ -54,6 +60,7 @@ module.exports =
 
       buffer.onDidChange (event) =>
         if @localChange
+          @localSelection = false
           console.log("local change", event)
           newBuffer = buffer.getText()
           @ws.write 'change', { file: editor.getTitle(), patch: event }

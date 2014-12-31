@@ -20,5 +20,3 @@ class AtomRemotePairView
 
   getElement: ->
     @element
-as testando essa porra funciona corretamente esse caralho da porr
-acho que esta sem qualquer problema
