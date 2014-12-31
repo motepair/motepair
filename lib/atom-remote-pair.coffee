@@ -14,6 +14,11 @@ module.exports =
     @ws.on 'open', ->
       console.log('Connected!')
 
+    @ws.on 'save-file', (event) =>
+      @localSave = false
+      for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
+        item.save()
+
     @ws.on 'close-file', (event) =>
       @localOpening = false
       closedItem = null
@@ -62,6 +67,12 @@ module.exports =
         @localSelection = true
 
     atom.workspace.observeTextEditors (editor) =>
+
+      editor.onDidSave (event) =>
+        if @localSave
+          @ws.write 'save-file', {path: @project.relativize(event.path)}
+
+        @localSave = true
 
       editor.onDidChangeCursorPosition (event) =>
         @localSelection = !event.textChanged
