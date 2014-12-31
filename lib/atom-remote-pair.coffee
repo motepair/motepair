@@ -14,6 +14,18 @@ module.exports =
     @ws.on 'open', ->
       console.log('Connected!')
 
+    @ws.on 'close-file', (event) =>
+      @localOpening = false
+      closedItem = null
+         
+      for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
+        closedItem = item
+
+      activePane = atom.workspace.getActivePane() 
+
+      activePane.destroyItem(closedItem)
+
+
     @ws.on 'open-file', (event) =>
       @localOpening = false
       atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
@@ -78,5 +90,9 @@ module.exports =
 
       @localOpening = true
 
-    atom.workspace.onWillDestroyPaneItem (event) ->
-      console.log("onWillDestroyPaneItem", event)
+    atom.workspace.onWillDestroyPaneItem (event) =>
+      if @localOpening
+        console.log("closing local", event)
+        @ws.write 'close-file', {path: @project.relativize(event.item.getPath())}
+
+      @localOpening = true
