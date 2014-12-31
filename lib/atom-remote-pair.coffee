@@ -4,13 +4,19 @@ WsEmitClient = require('./ws/ws-emit-client.js')
 module.exports =
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
+    @project = atom.project
     @localChange = true
     @localSelection = false
-    @emitter = new Emitter
+    @localOpening = true
+
     @ws = new WsEmitClient('ws://localhost:3000')
 
     @ws.on 'open', ->
       console.log('Connected!')
+
+    @ws.on 'open-file', (event) =>
+      @localOpening = false
+      atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
 
     @ws.on 'change', (event) =>
       console.log("remote change", event)
@@ -40,7 +46,6 @@ module.exports =
         editor.setSelectedBufferRange(event.range)
         @localSelection = true
 
-
     atom.workspace.observeTextEditors (editor) =>
 
       editor.onDidChangeCursorPosition (event) =>
@@ -65,3 +70,13 @@ module.exports =
           newBuffer = buffer.getText()
           @ws.write 'change', { file: editor.getTitle(), patch: event }
           @old = buffer.getText()
+
+
+    atom.workspace.onDidOpen (event) =>
+      if @localOpening
+        @ws.write 'open-file', {path: @project.relativize(event.uri)}
+
+      @localOpening = true
+
+    atom.workspace.onWillDestroyPaneItem (event) ->
+      console.log("onWillDestroyPaneItem", event)
