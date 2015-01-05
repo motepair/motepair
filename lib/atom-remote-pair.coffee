@@ -1,120 +1,119 @@
 {Emitter} = require 'event-kit'
 WsEmitClient = require('./ws/ws-emit-client.js')
+Fsm = require('./fsm.js')
+
+
+{TextEditor} = require('atom')
+
+
+localChange = true
+localSelection = false
+remoteClient = new WsEmitClient('ws://localhost:3000')
+fsm =  new Fsm({ localChange: localChange, ws: remoteClient})
 
 module.exports =
+
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
-    @localChange = true
-    @localSelection = false
+    # @localChange = true
+    # @localSelection = false
     @localOpening = true
 
-    @ws = new WsEmitClient('ws://localhost:3000')
-
-    @ws.on 'open', ->
+    remoteClient.on 'open', ->
       console.log('Connected!')
 
-    @ws.on 'save-file', (event) =>
+    remoteClient.on 'save-file', (event) =>
       @localSave = false
       for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
         item.save()
 
-    @ws.on 'close-file', (event) =>
+    remoteClient.on 'close-file', (event) =>
       @localOpening = false
       closedItem = null
 
       for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
         closedItem = item
 
-      activePane = atom.workspace.getActivePane() 
+      activePane = atom.workspace.getActivePane()
 
       activePane.destroyItem(closedItem)
 
-    @ws.on 'change-file', (event) =>
+    remoteClient.on 'change-file', (event) =>
       @localOpening = false
       atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
 
-    @ws.on 'open-file', (event) =>
+    remoteClient.on 'open-file', (event) =>
       @localOpening = false
       atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
 
-    @ws.on 'change', (event) =>
+    remoteClient.on 'change', (event) =>
       console.log("remote change", event)
 
       editors = atom.workspace.getTextEditors()
 
       for editor in editors when editor.getTitle() is event.file
-        buffer = editor.getBuffer()
         args = event.patch
 
         @localChange = false
-        if args.oldText.length > 0 and args.newText.length is 0
-          buffer.delete(args.oldRange)
-        else if args.oldText.length > 0 and args.newText.length > 0
-          buffer.delete(args.oldRange)
-          buffer.insert(args.newRange.start, args.newText)
-        else if args.oldText.length is 0 and args.newText.length > 0
-          buffer.insert(args.newRange.start, args.newText)
+        fsm.transition("remoteChanging")
+        fsm.handle("remoteChange", editor, args)
 
-        editor.getSelections()[0].clear()
-
-    @ws.on 'selection', (event) =>
+    remoteClient.on 'selection', (event) =>
       editors = atom.workspace.getTextEditors()
 
       for editor in editors when editor.getTitle() is event.file
-        @localSelection = false
-        editor.setSelectedBufferRange(event.range)
-        @localSelection = true
+        fsm.transition("remoteSelecting")
+        fsm.handle("remoteSelection", editor, event)
 
     atom.workspace.observeTextEditors (editor) =>
 
+      editor.backspace = (args) ->
+        this.emit('will-backspace', args)
+        TextEditor.prototype.backspace.call(this, args)
+
+      editor.on 'will-backspace', (event)->
+        fsm.transition("localChanging")
+
       editor.onDidSave (event) =>
         if @localSave
-          @ws.write 'save-file', {path: @project.relativize(event.path)}
+          remoteClient.write 'save-file', {path: @project.relativize(event.path)}
 
         @localSave = true
 
       editor.onDidChangeCursorPosition (event) =>
-        @localSelection = !event.textChanged
+        console.log("onDidCursorChange")
+        if event.textChanged
+          fsm.transition("localChanging")
+        else
+          fsm.transition("localSelecting")
 
       editor.onDidChangeSelectionRange (event) =>
-        if @localSelection
-          @ws.write 'selection', { file: editor.getTitle(), range: event.newBufferRange }
+        fsm.handle("localSelection", editor, event)
 
       editor.onWillInsertText (event) =>
-        @localSelection = false
-        @old = buffer.getText()
-        @localChange = true
+        console.log("transition to localChanging")
+        fsm.transition("localChanging")
 
       buffer = editor.getBuffer()
-      @old = buffer.getText()
 
       buffer.onDidChange (event) =>
-        if @localChange
-          @localSelection = false
-          console.log("local change", event)
-          newBuffer = buffer.getText()
-          @ws.write 'change', { file: editor.getTitle(), patch: event }
-          @old = buffer.getText()
-
+        fsm.handle('localChange', editor, event)
 
     atom.workspace.onDidOpen (event) =>
       if @localOpening
-        @ws.write 'open-file', {path: @project.relativize(event.uri)}
+        remoteClient.write 'open-file', {path: @project.relativize(event.uri)}
 
       @localOpening = true
 
     atom.workspace.onWillDestroyPaneItem (event) =>
       if @localOpening
-        @ws.write 'close-file', {path: @project.relativize(event.item.getPath())}
+        remoteClient.write 'close-file', {path: @project.relativize(event.item.getPath())}
 
       @localOpening = true
-
 
     atom.workspace.onDidChangeActivePaneItem (event) =>
       if @localOpening
-        @ws.write 'change-file', {path: @project.relativize(event.getPath())}
+        remoteClient.write 'change-file', {path: @project.relativize(event.getPath())}
 
       @localOpening = true
-
-
