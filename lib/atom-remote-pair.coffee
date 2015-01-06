@@ -16,8 +16,6 @@ module.exports =
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
-    # @localChange = true
-    # @localSelection = false
     @localOpening = true
 
     remoteClient.on 'open', ->
@@ -48,14 +46,11 @@ module.exports =
       atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
 
     remoteClient.on 'change', (event) =>
-      console.log("remote change", event)
-
       editors = atom.workspace.getTextEditors()
 
       for editor in editors when editor.getTitle() is event.file
         args = event.patch
 
-        @localChange = false
         fsm.transition("remoteChanging")
         fsm.handle("remoteChange", editor, args)
 
@@ -65,6 +60,10 @@ module.exports =
       for editor in editors when editor.getTitle() is event.file
         fsm.transition("remoteSelecting")
         fsm.handle("remoteSelection", editor, event)
+        setTimeout ->
+          fsm.transition("localSelecting")
+        , 300
+        
 
     atom.workspace.observeTextEditors (editor) =>
 
@@ -82,17 +81,17 @@ module.exports =
         @localSave = true
 
       editor.onDidChangeCursorPosition (event) =>
-        console.log("onDidCursorChange")
         if event.textChanged
           fsm.transition("localChanging")
         else
-          fsm.transition("localSelecting")
+          setTimeout ->
+            fsm.transition("localSelecting")
+          , 300
 
       editor.onDidChangeSelectionRange (event) =>
         fsm.handle("localSelection", editor, event)
 
       editor.onWillInsertText (event) =>
-        console.log("transition to localChanging")
         fsm.transition("localChanging")
 
       buffer = editor.getBuffer()
