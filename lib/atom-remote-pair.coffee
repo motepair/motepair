@@ -33,18 +33,12 @@ module.exports =
       fsm.handle("changeFile", event, atom)
 
     remoteClient.on 'change', (event) =>
-      editors = atom.workspace.getTextEditors()
-
-      for editor in editors when editor.getTitle() is event.file
-        args = event.patch
-
+      for editor in atom.workspace.getPaneItems() when editor.getPath().indexOf(event.file) >= 0
         fsm.transition("remoteChanging")
-        fsm.handle("remoteChange", editor, args)
+        fsm.handle("remoteChange", editor, event.change)
 
     remoteClient.on 'selection', (event) =>
-      editors = atom.workspace.getTextEditors()
-
-      for editor in editors when editor.getTitle() is event.file
+      for editor in atom.workspace.getPaneItems() when editor.getPath().indexOf(event.file) >= 0
         fsm.transition("remoteSelecting")
         fsm.handle("remoteSelection", editor, event)
         setTimeout ->
@@ -76,7 +70,7 @@ module.exports =
           , 300
 
       editor.onDidChangeSelectionRange (event) =>
-        fsm.handle("localSelection", editor, event)
+        fsm.handle("localSelection", atom, editor, event)
 
       editor.onWillInsertText (event) =>
         fsm.transition("localChanging")
@@ -84,7 +78,7 @@ module.exports =
       buffer = editor.getBuffer()
 
       buffer.onDidChange (event) =>
-        fsm.handle('localChange', editor, event)
+        fsm.handle('localChange', atom, editor, event)
 
     atom.workspace.onDidOpen (event) =>
       fsm.handle 'fileAction', 'change-file', @project.relativize(event.uri)
