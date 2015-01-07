@@ -9,6 +9,16 @@ fsm =  new Fsm({ws: remoteClient})
 
 module.exports =
 
+  config:
+    serverAddress:
+      title: 'Server address'
+      type: 'string'
+      default: 'localhost'
+    serverPort:
+      title: 'Server port number'
+      type: 'integer'
+      default: 4444
+
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
@@ -18,11 +28,11 @@ module.exports =
 
     remoteClient.on 'save-file', (event) =>
       fsm.transition("remoteFileChanging")
-      fsm.handle("saveFile", event, atom);
+      fsm.handle("saveFile", event, atom)
 
     remoteClient.on 'close-file', (event) =>
       fsm.transition("remoteFileChanging")
-      fsm.handle("closeFile", event, atom);
+      fsm.handle("closeFile", event, atom)
 
     remoteClient.on 'change-file', (event) =>
       fsm.transition("remoteFileChanging")
@@ -44,7 +54,6 @@ module.exports =
         setTimeout ->
           fsm.transition("localSelecting")
         , 300
-        
 
     atom.workspace.observeTextEditors (editor) =>
 
@@ -56,10 +65,8 @@ module.exports =
         fsm.transition("localChanging")
 
       editor.onDidSave (event) =>
-        if @localSave
-          remoteClient.write 'save-file', {path: @project.relativize(event.path)}
-
-        @localSave = true
+        fsm.handle("fileAction", "save-file", @project.relativize(event.path))
+        fsm.transition("localChanging")
 
       editor.onDidChangeCursorPosition (event) =>
         if event.textChanged
@@ -82,15 +89,12 @@ module.exports =
 
     atom.workspace.onDidOpen (event) =>
       fsm.handle 'fileAction', 'change-file', @project.relativize(event.uri)
-
       fsm.transition("localChanging")
 
     atom.workspace.onWillDestroyPaneItem (event) =>
       fsm.handle 'fileAction', 'close-file', @project.relativize(event.item.getPath())
-
       fsm.transition("localChanging")
 
     atom.workspace.onDidChangeActivePaneItem (event) =>
       fsm.handle 'fileAction', 'change-file', @project.relativize(event.getPath())
-
       fsm.transition("localChanging")
