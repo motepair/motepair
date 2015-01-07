@@ -14,10 +14,15 @@ module.exports =
       title: 'Server port number'
       type: 'integer'
       default: 3000
+    sessionId:
+      title: 'Session Id'
+      type: 'string'
+      default: 'amazing-pair-programming-experience'
 
   activate: ->
     address = atom.config.get('atom-remote-pair.serverAddress')
     portNumber = atom.config.get('atom-remote-pair.serverPort')
+    sessionId = atom.config.get('atom-remote-pair.sessionId')
 
     remoteClient = new WsEmitClient("ws://#{ address }:#{ portNumber }")
     fsm =  new Fsm({ws: remoteClient})
@@ -27,6 +32,7 @@ module.exports =
 
     remoteClient.on 'open', ->
       console.log('Connected!')
+      remoteClient.write('create-session', { sessionId: sessionId })
 
     remoteClient.on 'save-file', (event) =>
       fsm.transition("remoteFileChanging")
