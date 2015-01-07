@@ -3,10 +3,6 @@
 WsEmitClient = require('./ws/ws-emit-client.js')
 Fsm          = require('./fsm.js')
 
-
-remoteClient = new WsEmitClient('ws://localhost:3000')
-fsm =  new Fsm({ws: remoteClient})
-
 module.exports =
 
   config:
@@ -17,9 +13,15 @@ module.exports =
     serverPort:
       title: 'Server port number'
       type: 'integer'
-      default: 4444
+      default: 3000
 
   activate: ->
+    address = atom.config.get('atom-remote-pair.serverAddress')
+    portNumber = atom.config.get('atom-remote-pair.serverPort')
+
+    remoteClient = new WsEmitClient("ws://#{ address }:#{ portNumber }")
+    fsm =  new Fsm({ws: remoteClient})
+
     atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
 
