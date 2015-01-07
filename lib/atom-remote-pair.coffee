@@ -1,49 +1,36 @@
-{Emitter} = require 'event-kit'
-WsEmitClient = require('./ws/ws-emit-client.js')
-Fsm = require('./fsm.js')
-
-
+{Emitter}    = require 'event-kit'
 {TextEditor} = require('atom')
+WsEmitClient = require('./ws/ws-emit-client.js')
+Fsm          = require('./fsm.js')
 
 
-localChange = true
-localSelection = false
 remoteClient = new WsEmitClient('ws://localhost:3000')
-fsm =  new Fsm({ localChange: localChange, ws: remoteClient})
+fsm =  new Fsm({ws: remoteClient})
 
 module.exports =
 
   activate: ->
     atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
-    @localOpening = true
 
     remoteClient.on 'open', ->
       console.log('Connected!')
 
     remoteClient.on 'save-file', (event) =>
-      @localSave = false
-      for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
-        item.save()
+      fsm.transition("remoteFileChanging")
+      fsm.handle("saveFile", event, atom);
 
     remoteClient.on 'close-file', (event) =>
-      @localOpening = false
-      closedItem = null
-
-      for item in atom.workspace.getPaneItems() when item.getPath().indexOf(event.path) >= 0
-        closedItem = item
-
-      activePane = atom.workspace.getActivePane()
-
-      activePane.destroyItem(closedItem)
+      fsm.transition("remoteFileChanging")
+      fsm.handle("closeFile", event, atom);
 
     remoteClient.on 'change-file', (event) =>
-      @localOpening = false
-      atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
+      fsm.transition("remoteFileChanging")
+      fsm.handle("changeFile", event, atom)
 
     remoteClient.on 'open-file', (event) =>
-      @localOpening = false
-      atom.workspace.open("#{@project.getPaths()[0]}/#{event.path}")
+      fsm.transition("remoteFileChanging")
+      fsm.handle("changeFile", event, atom)
 
     remoteClient.on 'change', (event) =>
       editors = atom.workspace.getTextEditors()
@@ -100,19 +87,16 @@ module.exports =
         fsm.handle('localChange', editor, event)
 
     atom.workspace.onDidOpen (event) =>
-      if @localOpening
-        remoteClient.write 'open-file', {path: @project.relativize(event.uri)}
+      fsm.handle 'fileAction', 'change-file', @project.relativize(event.uri)
 
-      @localOpening = true
+      fsm.transition("localChanging")
 
     atom.workspace.onWillDestroyPaneItem (event) =>
-      if @localOpening
-        remoteClient.write 'close-file', {path: @project.relativize(event.item.getPath())}
+      fsm.handle 'fileAction', 'close-file', @project.relativize(event.item.getPath())
 
-      @localOpening = true
+      fsm.transition("localChanging")
 
     atom.workspace.onDidChangeActivePaneItem (event) =>
-      if @localOpening
-        remoteClient.write 'change-file', {path: @project.relativize(event.getPath())}
+      fsm.handle 'fileAction', 'change-file', @project.relativize(event.getPath())
 
-      @localOpening = true
+      fsm.transition("localChanging")
