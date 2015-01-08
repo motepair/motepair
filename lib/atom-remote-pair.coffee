@@ -97,12 +97,19 @@ module.exports =
 
     atom.workspace.onDidOpen (event) =>
       fsm.handle 'fileAction', 'change-file', @project.relativize(event.uri)
-      fsm.transition("localChanging")
+      setTimeout ->
+        fsm.transition("localChanging")
+      , 300
+
+    atom.workspace.onDidChangeActivePaneItem (event) =>
+      return unless event?
+      fsm.handle 'fileAction', 'change-file', @project.relativize(event.getPath())
+      setTimeout ->
+        fsm.transition("localChanging")
+      , 300
 
     atom.workspace.onWillDestroyPaneItem (event) =>
       fsm.handle 'fileAction', 'close-file', @project.relativize(event.item.getPath())
-      fsm.transition("localChanging")
-
-    atom.workspace.onDidChangeActivePaneItem (event) =>
-      fsm.handle 'fileAction', 'change-file', @project.relativize(event.getPath())
-      fsm.transition("localChanging")
+      setTimeout ->
+        fsm.transition("localChanging")
+      , 300
