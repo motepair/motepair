@@ -17,6 +17,7 @@ Features:
   - Create private sessions with only one server.
 
 Current Backlog:
+  - [OT](http://en.wikipedia.org/wiki/Operational_transformation).
   - Error Handling.
   - Clipboard sharing.
   - Change server from nodejs to elixir.
