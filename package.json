@@ -1,6 +1,6 @@
 {
   "name": "atom-remote-pair",
-  "main": "./lib/atom-remote-pair",
+  "main": "./lib/init",
   "version": "0.2.1",
   "description": "A Atom package to enable remote pairing",
   "activationCommands": {
