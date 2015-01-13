@@ -1,20 +1,16 @@
 {TextEditor} = require('atom')
-WsEmitClient = require('./ws/ws-emit-client.js')
-Fsm          = require('./fsm.js')
 
-class EventManager
-  constructor: (atom) ->
-
-  createSocketConnection: (address, portNumber) ->
-    @remoteClient = new WsEmitClient("ws://#{ address }:#{ portNumber }")
-    @fsm =  new Fsm({ws: @remoteClient})
-    @listen()
+class EventHandler
+  constructor: (atom, @remoteClient, @fsm) ->
 
   listen: ->
 
     @remoteClient.on 'open', =>
       sessionId = atom.config.get('atom-remote-pair.sessionId')
       @remoteClient.write('create-session', { sessionId: sessionId })
+
+    @remoteClient.on 'error', (error) ->
+      console.log(error)
 
     @remoteClient.on 'save-file', (event) =>
       @fsm.transition("remoteFileChanging")
@@ -100,4 +96,4 @@ class EventManager
         @fsm.transition("localChanging")
       , 300
 
-module.exports = EventManager
+module.exports = EventHandler

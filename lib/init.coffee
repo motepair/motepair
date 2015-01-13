@@ -1,4 +1,6 @@
-EventManager = require('./event_manager.coffee')
+EventHandler = require('./event_handler.coffee')
+WsEmitClient = require('./ws/ws-emit-client.js')
+Fsm          = require('./fsm.js')
 
 class RemoteInitializer
   config:
@@ -19,9 +21,14 @@ class RemoteInitializer
     @address = atom.config.get('atom-remote-pair.serverAddress')
     @portNumber = atom.config.get('atom-remote-pair.serverPort')
 
+  createSocketConnection: ->
+    @remoteClient = new WsEmitClient("ws://#{ @address }:#{ @portNumber }")
+    @fsm =  new Fsm({ws: @remoteClient})
+
   activate: ->
     @setDefaultValues()
-    @eventManager = new EventManager(atom)
-    @eventManager.createSocketConnection(@address, @portNumber)
+    @createSocketConnection()
+    @eventHandler = new EventHandler(atom, @remoteClient, @fsm)
+    @eventHandler.listen()
 
 module.exports = new RemoteInitializer()
