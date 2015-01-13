@@ -8,4 +8,6 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 'atom-workspace':
-  'ctrl-alt-o': 'atom-remote-pair:toggle'
+  'ctrl-alt-o': 'atom-remote-pair:toggle',
+  'ctrl-alt-g': 'atom-remote-pair:connect'
+
