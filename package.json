@@ -22,7 +22,8 @@
     "atom": ">0.50.0"
   },
   "activationEvents": [
-    "atom-remote-pair:connect"
+    "atom-remote-pair:connect",
+    "atom-remote-pair:disconnect"
   ],
   "dependencies": {
     "event-kit": "^0.8.1",

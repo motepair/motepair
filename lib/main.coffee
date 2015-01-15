@@ -30,17 +30,16 @@ class Main
     @fsm =  new Fsm({ws: @remoteClient})
 
   activate: ->
-    debugger
     @setDefaultValues()
     atom.workspaceView.command "atom-remote-pair:connect", => @connect()
+    atom.workspaceView.command "atom-remote-pair:disconnect", => @deactivate()
 
   connect: ->
     @createSocketConnection()
     @eventHandler = new EventHandler(@remoteClient, @fsm)
     @eventHandler.listen()
 
-  # deactivate: ->
-  #   if @remoteClient != undefined
-  #     @remoteClient.destroy()
+  deactivate: ->
+    @remoteClient.destroy()
 
 module.exports = new Main()
