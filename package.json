@@ -1,18 +1,28 @@
 {
   "name": "atom-remote-pair",
-  "main": "./lib/init",
+  "main": "./lib/main",
   "version": "0.2.1",
   "description": "A Atom package to enable remote pairing",
   "activationCommands": {
     "atom-workspace": "atom-remote-pair:toggle"
   },
+  "contributors": [
+    {
+      "name": "Leon Maia",
+      "email": "hi@leonmaia.com"
+    },
+    {
+      "name": "Luiz Filho",
+      "email": "luizbafilho@gmail.com"
+    }
+  ],
   "repository": "https://github.com/atom/atom-remote-pair",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
   },
   "activationEvents": [
-    "remote-pair:action"
+    "atom-remote-pair:connect"
   ],
   "dependencies": {
     "event-kit": "^0.8.1",

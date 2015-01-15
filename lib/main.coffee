@@ -2,7 +2,11 @@ EventHandler = require('./event_handler.coffee')
 WsEmitClient = require('./ws/ws-emit-client.js')
 Fsm          = require('./fsm.js')
 
-class RemoteInitializer
+class Main
+  ### Public ###
+
+  version: require('../package.json').version
+ #The default remote pair settings
   config:
     serverAddress:
       title: 'Server address'
@@ -26,9 +30,17 @@ class RemoteInitializer
     @fsm =  new Fsm({ws: @remoteClient})
 
   activate: ->
+    debugger
     @setDefaultValues()
+    atom.workspaceView.command "atom-remote-pair:connect", => @connect()
+
+  connect: ->
     @createSocketConnection()
-    @eventHandler = new EventHandler(atom, @remoteClient, @fsm)
+    @eventHandler = new EventHandler(@remoteClient, @fsm)
     @eventHandler.listen()
 
-module.exports = new RemoteInitializer()
+  # deactivate: ->
+  #   if @remoteClient != undefined
+  #     @remoteClient.destroy()
+
+module.exports = new Main()

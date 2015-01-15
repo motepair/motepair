@@ -1,13 +1,14 @@
 {TextEditor} = require('atom')
 
 class EventHandler
-  constructor: (atom, @remoteClient, @fsm) ->
+  constructor: (@remoteClient, @fsm) ->
 
   listen: ->
 
-    @remoteClient.on 'open', =>
+    @remoteClient.on 'open', ->
       sessionId = atom.config.get('atom-remote-pair.sessionId')
-      @remoteClient.write('create-session', { sessionId: sessionId })
+      console.log("conectado")
+      this.write('create-session', { sessionId: sessionId })
 
     @remoteClient.on 'error', (error) ->
       console.log(error)
@@ -42,9 +43,7 @@ class EventHandler
         , 300
 
 
-    atom.workspaceView.command "remote-pair:action", => @action()
     @project = atom.project
-
     atom.workspace.observeTextEditors (editor) =>
 
       editor.backspace = (args) =>
@@ -72,9 +71,7 @@ class EventHandler
       editor.onWillInsertText (event) =>
         @fsm.transition("localChanging")
 
-      buffer = editor.getBuffer()
-
-      buffer.onDidChange (event) =>
+      editor.getBuffer().onDidChange (event) =>
         @fsm.handle('localChange', atom, editor, event)
 
     atom.workspace.onDidOpen (event) =>
