@@ -8,23 +8,21 @@ class AtomShare
       @sharejs = require('share').client
       @sjs = new @sharejs.Connection(@ws)
 
-  docReady: ->
-    unless this.type?
-      this.create 'text'
-    if this.type and this.type.name is 'text'
-      this.attachTextarea(this.textArea)
-
   start: ->
     atom.workspace.observeTextEditors (editor) =>
       relativePath = atom.project.relativize(editor.getPath())
-      
-      doc = @sjs.get('editors', relativePath);
+      sessionId = atom.config.get('atom-remote-pair.sessionId')
+      doc = @sjs.get('editors', "#{sessionId}:#{relativePath}")
       doc.textArea = document.createElement('textarea')
-      doc.subscribe();
-      doc.whenReady @docReady
+      doc.subscribe()
+      doc.whenReady ->
+        unless doc.type?
+          doc.create 'text'
+        if doc.type and doc.type.name is 'text'
+          doc.attachTextarea(doc.textArea)
 
       buffer = editor.getBuffer()
-      attacher.attach(@sharejs, buffer)
+      attacher.attach(doc, buffer)
 
       buffer.onDidChange (event) ->
         doc.textArea.value = buffer.getText()
