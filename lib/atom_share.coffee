@@ -3,10 +3,6 @@
 attacher = require './textarea_attach.js'
 
 class AtomShare
-  sharejs: null
-  sjs: null
-  docs: []
-
   constructor: (@ws) ->
     allowUnsafeEval =>
       @sharejs = require('share').client
@@ -20,12 +16,12 @@ class AtomShare
 
   start: ->
     atom.workspace.observeTextEditors (editor) =>
-      doc = @sjs.get('editors', editor.getTitle());
+      relativePath = atom.project.relativize(editor.getPath())
+      
+      doc = @sjs.get('editors', relativePath);
       doc.textArea = document.createElement('textarea')
-
       doc.subscribe();
       doc.whenReady @docReady
-      @docs.push doc
 
       buffer = editor.getBuffer()
       attacher.attach(@sharejs, buffer)
