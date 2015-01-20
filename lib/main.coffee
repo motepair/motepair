@@ -1,12 +1,14 @@
 EventHandler = require('./event_handler.coffee')
-WsEmitClient = require('./ws/ws-emit-client.js')
+# WsEmitClient = require('./ws/ws-emit-client.js')
+WebSocket    = require('ws');
 Fsm          = require('./fsm.js')
+AtomShare    = require './atom_share'
 
 class Main
   ### Public ###
 
   version: require('../package.json').version
- #The default remote pair settings
+  #The default remote pair settings
   config:
     serverAddress:
       title: 'Server address'
@@ -26,8 +28,9 @@ class Main
     @portNumber = atom.config.get('atom-remote-pair.serverPort')
 
   createSocketConnection: ->
-    @remoteClient = new WsEmitClient("ws://#{ @address }:#{ @portNumber }")
-    @fsm =  new Fsm({ws: @remoteClient})
+    @ws = new WebSocket("http://localhost:3000")
+    @ws.on "open", ->
+      console.log("Connected")
 
   activate: ->
     @setDefaultValues()
@@ -36,8 +39,8 @@ class Main
 
   connect: ->
     @createSocketConnection()
-    @eventHandler = new EventHandler(@remoteClient, @fsm)
-    @eventHandler.listen()
+    @atom_share = new AtomShare(@ws)
+    @atom_share.start()
 
   deactivate: ->
     @remoteClient.destroy()
