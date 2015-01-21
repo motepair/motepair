@@ -1,10 +1,10 @@
 {TextEditor} = require('atom')
 
 class EventHandler
-  project: atom.project
-  workspace: atom.workspace
 
   constructor: (@remoteClient) ->
+    @project = atom.project
+    @workspace = atom.workspace
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
@@ -30,14 +30,12 @@ class EventHandler
       if @["on#{event.type}"]?
         @["on#{event.type}"](event.data)
 
-
     @workspace.observeTextEditors (editor) =>
-      
+
       editor.onDidSave (event) =>
         data = { a: 'meta', type:'save', data: { file: @project.relativize(event.path) } }
 
         @remoteClient.send JSON.stringify(data)
-
 
     @workspace.onDidOpen (event) =>
       data = { a: 'meta', type:'open', data: { file: @project.relativize(event.uri) } }
@@ -46,7 +44,7 @@ class EventHandler
 
     @workspace.onWillDestroyPaneItem (event) =>
       data = { a: 'meta', type:'close', data: { file: @project.relativize(event.item.getPath()) } }
-      
+
       @remoteClient.send JSON.stringify(data)
 
     @workspace.onDidChangeActivePaneItem (event) =>
@@ -54,6 +52,6 @@ class EventHandler
       data = { a: 'meta', type:'open', data: { file: @project.relativize(event.getPath()) } }
 
       @remoteClient.send JSON.stringify(data)
-      
+
 
 module.exports = EventHandler
