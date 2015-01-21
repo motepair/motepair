@@ -6,6 +6,12 @@ class EventHandler
 
   constructor: (@remoteClient) ->
 
+  onselection: (data) ->
+    console.log("s -> c: ", data)
+    for editor in @workspace.getPaneItems() when editor.getPath().indexOf(data.file) >= 0
+      console.log("selection")
+      editor.setSelectedBufferRange(data.selection)
+
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
     atom.workspace.open(path)
@@ -38,6 +44,18 @@ class EventHandler
 
         @remoteClient.send JSON.stringify(data)
 
+      editor.onDidChangeSelectionRange (event) =>
+        setTimeout =>
+          data = 
+            a: 'meta'
+            type:'selection'
+            data: 
+              selection: event.newBufferRange
+              file: @project.relativize(editor.getPath())
+
+          @remoteClient.send JSON.stringify(data)
+        , 300
+        
 
     @workspace.onDidOpen (event) =>
       data = { a: 'meta', type:'open', data: { file: @project.relativize(event.uri) } }
