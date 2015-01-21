@@ -2,12 +2,25 @@
 
 class EventHandler
   project: atom.project
+  workspace: atom.workspace
 
   constructor: (@remoteClient) ->
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
     atom.workspace.open(path)
+
+  onclose: (data) ->
+    closedItem = null
+
+    atom.workspace.getPaneItems().forEach (item) ->
+      closedItem = item if item.getPath().indexOf(data.file) >= 0
+
+    atom.workspace.getActivePane().destroyItem closedItem
+
+  onsave: (data) ->
+    @workspace.getPaneItems().forEach (item) ->
+      item.save()  if item.getPath().indexOf(data.file) >= 0
 
   listen: ->
 
@@ -18,18 +31,29 @@ class EventHandler
         @["on#{event.type}"](event.data)
 
 
-    atom.workspace.observeTextEditors (editor) =>
-      console.log("editor")
+    @workspace.observeTextEditors (editor) =>
+      
+      editor.onDidSave (event) =>
+        data = { a: 'meta', type:'save', data: { file: @project.relativize(event.path) } }
 
-    atom.workspace.onDidOpen (event) =>
-      console.log("c -> s: Abrindo local")
-      data =
-        a: 'meta'
-        type:'open'
-        data:
-          file: @project.relativize(event.uri)
+        @remoteClient.send JSON.stringify(data)
+
+
+    @workspace.onDidOpen (event) =>
+      data = { a: 'meta', type:'open', data: { file: @project.relativize(event.uri) } }
 
       @remoteClient.send JSON.stringify(data)
 
+    @workspace.onWillDestroyPaneItem (event) =>
+      data = { a: 'meta', type:'close', data: { file: @project.relativize(event.item.getPath()) } }
+      
+      @remoteClient.send JSON.stringify(data)
+
+    @workspace.onDidChangeActivePaneItem (event) =>
+      return unless event?
+      data = { a: 'meta', type:'open', data: { file: @project.relativize(event.getPath()) } }
+
+      @remoteClient.send JSON.stringify(data)
+      
 
 module.exports = EventHandler

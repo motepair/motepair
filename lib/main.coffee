@@ -1,7 +1,5 @@
 EventHandler = require('./event_handler.coffee')
-# WsEmitClient = require('./ws/ws-emit-client.js')
 WebSocket    = require('ws');
-Fsm          = require('./fsm.js')
 AtomShare    = require './atom_share'
 
 class Main
