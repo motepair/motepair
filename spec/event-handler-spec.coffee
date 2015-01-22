@@ -49,3 +49,20 @@ describe "EventHandler", ->
       @ws.emit 'message', JSON.stringify data
       expect(pane.destroyItem).toHaveBeenCalled()
 
+  describe "onsave", ->
+    it "should save the file", ->
+      pane = jasmine.createSpyObj('pane', ['save'])
+      pane.getPath = ->
+        return "lib/main.coffee"
+
+      spyOn(@event_handler.workspace, 'getPaneItems').andReturn([pane])
+
+      data = { a: 'meta', type:'save', data: { file: "lib/main.coffee" } }
+      @ws.emit 'message', JSON.stringify data
+
+      expect(pane.save).toHaveBeenCalled()
+
+
+
+
+

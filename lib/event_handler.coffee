@@ -8,19 +8,19 @@ class EventHandler
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
-    atom.workspace.open(path)
+    @workspace.open(path)
 
   onclose: (data) ->
     closedItem = null
 
-    atom.workspace.getPaneItems().forEach (item) ->
+    @workspace.getPaneItems().forEach (item) ->
       closedItem = item if item.getPath().indexOf(data.file) >= 0
 
-    atom.workspace.getActivePane().destroyItem closedItem
+    @workspace.getActivePane().destroyItem closedItem
 
   onsave: (data) ->
     @workspace.getPaneItems().forEach (item) ->
-      item.save()  if item.getPath().indexOf(data.file) >= 0
+      item.save() if item.getPath().indexOf(data.file) >= 0
 
   listen: ->
 
