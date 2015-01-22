@@ -22,6 +22,11 @@ class EventHandler
     @workspace.getPaneItems().forEach (item) ->
       item.save() if item.getPath().indexOf(data.file) >= 0
 
+  sendFileEvents: (type , file) ->
+    data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
+
+    @remoteClient.send JSON.stringify(data)
+
   listen: ->
 
     @remoteClient.on 'message', (event) =>
@@ -32,26 +37,20 @@ class EventHandler
 
     @workspace.observeTextEditors (editor) =>
 
-      editor.onDidSave (event) =>
-        data = { a: 'meta', type:'save', data: { file: @project.relativize(event.path) } }
+      buffer = editor.getBuffer()
 
-        @remoteClient.send JSON.stringify(data)
+      buffer.onDidChange (event) ->
+        editor.setCursorScreenPosition(event.newRange.end)
 
-    @workspace.onDidOpen (event) =>
-      data = { a: 'meta', type:'open', data: { file: @project.relativize(event.uri) } }
+      editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
-      @remoteClient.send JSON.stringify(data)
+    @workspace.onDidOpen (event) => @sendFileEvents('open', event.uri)
 
-    @workspace.onWillDestroyPaneItem (event) =>
-      data = { a: 'meta', type:'close', data: { file: @project.relativize(event.item.getPath()) } }
-
-      @remoteClient.send JSON.stringify(data)
+    @workspace.onWillDestroyPaneItem (event) => @sendFileEvents('close', event.item.getPath())
 
     @workspace.onDidChangeActivePaneItem (event) =>
       return unless event?
-      data = { a: 'meta', type:'open', data: { file: @project.relativize(event.getPath()) } }
-
-      @remoteClient.send JSON.stringify(data)
+      @sendFileEvents('open', event.getPath())
 
 
 module.exports = EventHandler
