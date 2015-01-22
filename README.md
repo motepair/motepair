@@ -1,5 +1,7 @@
 # Remote Pairing package
 
+[![Build Status](https://travis-ci.org/luizbafilho/atom-remote-pair.svg?branch=master)](https://travis-ci.org/luizbafilho/atom-remote-pair)
+
 Remote pair programming tool for Atom. Lag free!
 ![remote-pair](https://raw.githubusercontent.com/luizbafilho/atom-remote-pair/master/docs/presentation-large.gif)
 
