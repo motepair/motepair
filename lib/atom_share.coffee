@@ -8,9 +8,12 @@ class AtomShare
       require('./textarea_attach')(@sharejs)
 
   start: ->
+    sessionId = atom.config.get('atom-remote-pair.sessionId')
+
+    @ws.send JSON.stringify({ a: 'meta', type: 'init', sessionId: sessionId })
+
     atom.workspace.observeTextEditors (editor) =>
       relativePath = atom.project.relativize(editor.getPath())
-      sessionId = atom.config.get('atom-remote-pair.sessionId')
 
       doc = @sjs.get('editors', "#{sessionId}:#{relativePath}")
 

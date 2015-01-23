@@ -28,9 +28,6 @@ class Main
   createSocketConnection: ->
     @ws = new WebSocket("http://localhost:3000")
 
-    @ws.on "open", ->
-      console.log("Connected")
-
   activate: ->
     @setDefaultValues()
     atom.workspaceView.command "atom-remote-pair:connect", => @connect()
@@ -38,11 +35,14 @@ class Main
 
   connect: ->
     @createSocketConnection()
-    @atom_share = new AtomShare(@ws)
-    @atom_share.start()
 
-    @event_handler = new EventHandler(@ws)
-    @event_handler.listen()
+    @ws.on "open", =>
+      console.log("Connected")
+      @atom_share = new AtomShare(@ws)
+      @atom_share.start()
+
+      @event_handler = new EventHandler(@ws)
+      @event_handler.listen()
 
   deactivate: ->
     @remoteClient.destroy()
