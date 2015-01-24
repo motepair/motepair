@@ -2,11 +2,12 @@ EventHandler = require './event_handler'
 AtomShare    = require './atom_share'
 WebSocket    = require 'ws'
 
-class Main
+module.exports =
   ### Public ###
 
   version: require('../package.json').version
   #The default remote pair settings
+  # Internal: The default configuration properties for the package.
   config:
     serverAddress:
       title: 'Server address'
@@ -15,7 +16,7 @@ class Main
     serverPort:
       title: 'Server port number'
       type: 'integer'
-      default: 4444
+      default: 3000
     sessionId:
       title: 'Session Id'
       type: 'string'
@@ -26,7 +27,7 @@ class Main
     @portNumber = atom.config.get('atom-remote-pair.serverPort')
 
   createSocketConnection: ->
-    new WebSocket("http://localhost:3000")
+    new WebSocket("http://#{@address}:#{@portNumber}")
 
   activate: ->
     @setDefaultValues()
@@ -50,5 +51,3 @@ class Main
     @ws = null
     @event_handler.subscriptions.dispose()
     @atom_share.subscriptions.dispose()
-    
-module.exports = new Main()

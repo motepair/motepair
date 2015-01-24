@@ -36,7 +36,6 @@ class EventHandler
   listen: ->
 
     @remoteClient.on 'message', (event) =>
-      console.log("eventHandler.remotecCLient", event)
       event = JSON.parse(event)
 
       if @["on#{event.type}"]?
@@ -53,10 +52,12 @@ class EventHandler
 
     @subscriptions.add @workspace.onDidOpen (event) => @sendFileEvents('open', event.uri)
 
-    @subscriptions.add @workspace.onWillDestroyPaneItem (event) => @sendFileEvents('close', event.item.getPath())
+    @subscriptions.add @workspace.onWillDestroyPaneItem (event) => 
+      return unless event.getPath?
+      @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
-      return unless event?
+      return unless event? and event.getPath?
       @sendFileEvents('open', event.getPath())
 
 

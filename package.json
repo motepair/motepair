@@ -3,9 +3,6 @@
   "main": "./lib/main",
   "version": "0.2.1",
   "description": "A Atom package to enable remote pairing",
-  "activationCommands": {
-    "atom-workspace": "atom-remote-pair:toggle"
-  },
   "contributors": [
     {
       "name": "Leon Maia",
@@ -21,10 +18,6 @@
   "engines": {
     "atom": ">0.50.0"
   },
-  "activationEvents": [
-    "atom-remote-pair:connect",
-    "atom-remote-pair:disconnect"
-  ],
   "dependencies": {
     "event-kit": "^0.8.1",
     "inherits": "~2.0.1",
