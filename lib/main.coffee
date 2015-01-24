@@ -6,7 +6,7 @@ module.exports =
   ### Public ###
 
   version: require('../package.json').version
-  #The default remote pair settings
+  # The default remote pair settings
   # Internal: The default configuration properties for the package.
   config:
     serverAddress:
@@ -45,6 +45,11 @@ module.exports =
 
       @event_handler = new EventHandler(@ws)
       @event_handler.listen()
+
+    @ws.on 'error', (e) =>
+      @ws.close()
+      @ws = null
+      console.log(e)
 
   deactivate: ->
     @ws.close()
