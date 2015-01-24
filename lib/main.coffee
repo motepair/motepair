@@ -1,6 +1,6 @@
-EventHandler = require('./event_handler.coffee')
-WebSocket    = require('ws');
+EventHandler = require './event_handler'
 AtomShare    = require './atom_share'
+WebSocket    = require 'ws'
 
 class Main
   ### Public ###
@@ -26,7 +26,7 @@ class Main
     @portNumber = atom.config.get('atom-remote-pair.serverPort')
 
   createSocketConnection: ->
-    @ws = new WebSocket("http://localhost:3000")
+    new WebSocket("http://localhost:3000")
 
   activate: ->
     @setDefaultValues()
@@ -34,10 +34,11 @@ class Main
     atom.workspaceView.command "atom-remote-pair:disconnect", => @deactivate()
 
   connect: ->
-    @createSocketConnection()
+    @ws ?= @createSocketConnection()
 
     @ws.on "open", =>
       console.log("Connected")
+
       @atom_share = new AtomShare(@ws)
       @atom_share.start()
 
@@ -45,6 +46,9 @@ class Main
       @event_handler.listen()
 
   deactivate: ->
-    @remoteClient.destroy()
-
+    @ws.close()
+    @ws = null
+    @event_handler.subscriptions.dispose()
+    @atom_share.subscriptions.dispose()
+    
 module.exports = new Main()

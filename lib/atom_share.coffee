@@ -1,7 +1,9 @@
 {allowUnsafeEval} = require 'loophole'
+{CompositeDisposable} = require 'atom'
 
 class AtomShare
   constructor: (@ws) ->
+    @subscriptions = new CompositeDisposable
     allowUnsafeEval =>
       @sharejs = require('share').client
       @sjs = new @sharejs.Connection(@ws)
@@ -12,7 +14,7 @@ class AtomShare
 
     @ws.send JSON.stringify({ a: 'meta', type: 'init', sessionId: sessionId })
 
-    atom.workspace.observeTextEditors (editor) =>
+    @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       relativePath = atom.project.relativize(editor.getPath())
 
       doc = @sjs.get('editors', "#{sessionId}:#{relativePath}")
@@ -29,7 +31,7 @@ class AtomShare
       if doc.type and doc.type.name is 'text'
         doc.attachTextarea(doc.textArea, buffer)
 
-    buffer.onDidChange (event) ->
+    @subscriptions.add buffer.onDidChange (event) ->
       doc.textArea.value = buffer.getText()
       doc.textArea.dispatchEvent(new Event('textInput'))
 

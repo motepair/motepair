@@ -1,10 +1,13 @@
-{TextEditor} = require('atom')
+{EventEmitter}        = require 'events'
+{CompositeDisposable} = require 'atom'
 
 class EventHandler
 
   constructor: (@remoteClient) ->
+    @emitter = new EventEmitter
     @project = atom.project
     @workspace = atom.workspace
+    @subscriptions = new CompositeDisposable
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
@@ -25,30 +28,34 @@ class EventHandler
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
 
-    @remoteClient.send JSON.stringify(data)
+    try
+      @remoteClient.send JSON.stringify(data)
+    catch e
+      console.log('Websocket error: ', e)
 
   listen: ->
 
     @remoteClient.on 'message', (event) =>
+      console.log("eventHandler.remotecCLient", event)
       event = JSON.parse(event)
 
       if @["on#{event.type}"]?
         @["on#{event.type}"](event.data)
 
-    @workspace.observeTextEditors (editor) =>
+    @subscriptions.add @workspace.observeTextEditors (editor) =>
 
       buffer = editor.getBuffer()
 
-      buffer.onDidChange (event) ->
+      @subscriptions.add buffer.onDidChange (event) =>
         editor.setCursorScreenPosition(event.newRange.end)
 
-      editor.onDidSave (event) => @sendFileEvents('save', event.path)
+      @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
-    @workspace.onDidOpen (event) => @sendFileEvents('open', event.uri)
+    @subscriptions.add @workspace.onDidOpen (event) => @sendFileEvents('open', event.uri)
 
-    @workspace.onWillDestroyPaneItem (event) => @sendFileEvents('close', event.item.getPath())
+    @subscriptions.add @workspace.onWillDestroyPaneItem (event) => @sendFileEvents('close', event.item.getPath())
 
-    @workspace.onDidChangeActivePaneItem (event) =>
+    @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
       return unless event?
       @sendFileEvents('open', event.getPath())
 
