@@ -1,6 +1,7 @@
 EventHandler = require './event_handler'
 AtomShare    = require './atom_share'
 WebSocket    = require 'ws'
+NewSessionView = require './new-session-view'
 
 module.exports =
   ### Public ###
@@ -17,10 +18,6 @@ module.exports =
       title: 'Server port number'
       type: 'integer'
       default: 3000
-    sessionId:
-      title: 'Session Id'
-      type: 'string'
-      default: 'amazing-pair-programming-experience'
 
   setDefaultValues: ->
     @address = atom.config.get('atom-remote-pair.serverAddress')
@@ -31,17 +28,25 @@ module.exports =
 
   activate: ->
     @setDefaultValues()
-    atom.workspaceView.command "atom-remote-pair:connect", => @connect()
+    atom.workspaceView.command "atom-remote-pair:connect", => @startSession()
     atom.workspaceView.command "atom-remote-pair:disconnect", => @deactivate()
 
-  connect: ->
+  startSession: ->
+    @view = new NewSessionView()
+    @view.show()
+
+    @view.on 'core:confirm', =>
+      @connect(@view.miniEditor.getText())
+
+  connect: (sessionId)->
+
     @ws ?= @createSocketConnection()
 
     @ws.on "open", =>
       console.log("Connected")
 
       @atom_share = new AtomShare(@ws)
-      @atom_share.start()
+      @atom_share.start(sessionId)
 
       @event_handler = new EventHandler(@ws)
       @event_handler.listen()
@@ -49,7 +54,6 @@ module.exports =
     @ws.on 'error', (e) =>
       @ws.close()
       @ws = null
-      console.log(e)
 
   deactivate: ->
     @ws.close()

@@ -9,9 +9,7 @@ class AtomShare
       @sjs = new @sharejs.Connection(@ws)
       require('./textarea_attach')(@sharejs)
 
-  start: ->
-    sessionId = atom.config.get('atom-remote-pair.sessionId')
-
+  start: (sessionId) ->
     @ws.send JSON.stringify({ a: 'meta', type: 'init', sessionId: sessionId })
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
