@@ -21,16 +21,16 @@ module.exports =
       default: 3000
 
   setDefaultValues: ->
-    @address = atom.config.get('atom-remote-pair.serverAddress')
-    @portNumber = atom.config.get('atom-remote-pair.serverPort')
+    @address = atom.config.get('motepair.serverAddress')
+    @portNumber = atom.config.get('motepair.serverPort')
 
   createSocketConnection: ->
     new WebSocket("http://#{@address}:#{@portNumber}")
 
   activate: ->
     @setDefaultValues()
-    atom.workspaceView.command "atom-remote-pair:connect", => @startSession()
-    atom.workspaceView.command "atom-remote-pair:disconnect", => @deactivate()
+    atom.workspaceView.command "motepair:connect", => @startSession()
+    atom.workspaceView.command "motepair:disconnect", => @deactivate()
 
   startSession: ->
     @view = new NewSessionView()
@@ -38,10 +38,10 @@ module.exports =
 
     @view.on 'core:confirm', =>
       @sessionStatusView = new SessionView
-      @sessionStatusView.show(@view.miniEditor.getText())  
+      @sessionStatusView.show(@view.miniEditor.getText())
 
       @connect(@view.miniEditor.getText())
-    
+
 
   connect: (sessionId)->
 

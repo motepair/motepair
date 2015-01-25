@@ -1,5 +1,5 @@
 {
-  "name": "atom-remote-pair",
+  "name": "motepair",
   "main": "./lib/main",
   "version": "0.2.1",
   "description": "A Atom package to enable remote pairing",
@@ -13,7 +13,7 @@
       "email": "luizbafilho@gmail.com"
     }
   ],
-  "repository": "https://github.com/atom/atom-remote-pair",
+  "repository": "https://github.com/atom/motepair",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
