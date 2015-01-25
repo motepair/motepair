@@ -9,8 +9,8 @@ class NewSessionView extends View
     @miniEditor.setText(crypto.randomBytes(8).toString('hex'))
     @miniEditor.focus()
 
-    @on 'core:confirm', =>
-      @detach()
+    @on 'core:confirm', => @detach()
+    @on 'core:cancel', => @detach()
 
   @content: ->
     @div class: 'firepad overlay from-top mini', =>
@@ -19,6 +19,5 @@ class NewSessionView extends View
       @div 'Enter a string to identify this share session'
 
   show: ->
-    # editorView = new NewSessionView
     atom.workspaceView.append(this)
     @miniEditor.focus()

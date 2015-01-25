@@ -2,6 +2,7 @@ EventHandler = require './event_handler'
 AtomShare    = require './atom_share'
 WebSocket    = require 'ws'
 NewSessionView = require './new-session-view'
+SessionView = require './session-view'
 
 module.exports =
   ### Public ###
@@ -36,7 +37,11 @@ module.exports =
     @view.show()
 
     @view.on 'core:confirm', =>
+      @sessionStatusView = new SessionView
+      @sessionStatusView.show(@view.miniEditor.getText())  
+
       @connect(@view.miniEditor.getText())
+    
 
   connect: (sessionId)->
 
@@ -56,6 +61,7 @@ module.exports =
       @ws = null
 
   deactivate: ->
+    @sessionStatusView.hide()
     @ws.close()
     @ws = null
     @event_handler.subscriptions.dispose()
