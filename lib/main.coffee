@@ -14,11 +14,11 @@ module.exports =
     serverAddress:
       title: 'Server address'
       type: 'string'
-      default: 'localhost'
+      default: 'motepair.herokuapp.com'
     serverPort:
       title: 'Server port number'
       type: 'integer'
-      default: 3000
+      default: 80
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
