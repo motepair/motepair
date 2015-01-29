@@ -1,7 +1,7 @@
 {
   "name": "motepair",
   "main": "./lib/main",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A Atom package to enable remote pairing.",
   "contributors": [
     {
