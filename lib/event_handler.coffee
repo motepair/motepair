@@ -17,7 +17,7 @@ class EventHandler
     closedItem = null
 
     @workspace.getPaneItems().forEach (item) ->
-      closedItem = item if item.getPath().indexOf(data.file) >= 0
+      closedItem = item if item.getPath()?.indexOf(data.file) >= 0
 
     @workspace.getActivePane().destroyItem closedItem
 
@@ -31,7 +31,7 @@ class EventHandler
     try
       @remoteClient.send JSON.stringify(data)
     catch e
-      console.log('Websocket error: ', e)
+      @emitter.emit 'socket-not-opened'
 
   listen: ->
 
@@ -50,14 +50,16 @@ class EventHandler
 
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
-    @subscriptions.add @workspace.onDidOpen (event) => @sendFileEvents('open', event.uri)
+    @subscriptions.add @workspace.onDidOpen (event) =>
+      return if event.uri.indexOf('undefined') >= 0 or event.uri is 'atom://config'
+      @sendFileEvents('open', event.uri)
 
-    @subscriptions.add @workspace.onWillDestroyPaneItem (event) => 
-      return unless event.getPath?
+    @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
+      return unless event.item.getPath?()?
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
-      return unless event? and event.getPath?
+      return unless event? and event.getPath? and event.getPath()?
       @sendFileEvents('open', event.getPath())
 
 

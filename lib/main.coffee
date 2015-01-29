@@ -25,6 +25,7 @@ module.exports =
     @portNumber = atom.config.get('motepair.serverPort')
 
   createSocketConnection: ->
+    @setDefaultValues()
     new WebSocket("http://#{@address}:#{@portNumber}")
 
   activate: ->
@@ -37,9 +38,6 @@ module.exports =
     @view.show()
 
     @view.on 'core:confirm', =>
-      @sessionStatusView = new SessionView
-      @sessionStatusView.show(@view.miniEditor.getText())
-
       @connect(@view.miniEditor.getText())
 
 
@@ -56,13 +54,21 @@ module.exports =
       @event_handler = new EventHandler(@ws)
       @event_handler.listen()
 
+      @event_handler.emitter.on 'socket-not-opened', =>
+        @deactivate()
+
+      @sessionStatusView = new SessionView
+      @sessionStatusView.show(@view.miniEditor.getText())
+
     @ws.on 'error', (e) =>
+      console.log('error', e)
       @ws.close()
       @ws = null
 
+
   deactivate: ->
-    @sessionStatusView.hide()
-    @ws.close()
+    @sessionStatusView?.hide()
+    @ws?.close()
     @ws = null
-    @event_handler.subscriptions.dispose()
-    @atom_share.subscriptions.dispose()
+    @event_handler?.subscriptions.dispose()
+    @atom_share?.subscriptions.dispose()
