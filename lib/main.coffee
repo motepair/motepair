@@ -40,6 +40,12 @@ module.exports =
     @view.on 'core:confirm', =>
       @connect(@view.miniEditor.getText())
 
+  setupHeartbeat: ->
+    id = setInterval =>
+      @ws.send 'ping', (error) ->
+        if error?
+          clearInterval(id)
+    , 30000
 
   connect: (sessionId)->
 
@@ -47,7 +53,7 @@ module.exports =
 
     @ws.on "open", =>
       console.log("Connected")
-
+      @setupHeartbeat()
       @atom_share = new AtomShare(@ws)
       @atom_share.start(sessionId)
 
