@@ -17,13 +17,13 @@ class EventHandler
     closedItem = null
 
     @workspace.getPaneItems().forEach (item) ->
-      closedItem = item if item.getPath()?.indexOf(data.file) >= 0
+      closedItem = item if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
 
     @workspace.getActivePane().destroyItem closedItem
 
   onsave: (data) ->
     @workspace.getPaneItems().forEach (item) ->
-      item.save() if item.getPath().indexOf(data.file) >= 0
+      item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
 
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
