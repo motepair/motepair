@@ -1,33 +1,46 @@
 # Remote Pairing package
 
-[![Build Status](https://travis-ci.org/luizbafilho/atom-remote-pair.svg?branch=master)](https://travis-ci.org/luizbafilho/atom-remote-pair)
-
 Remote pair programming tool for Atom. Lag free!
-![remote-pair](https://raw.githubusercontent.com/luizbafilho/atom-remote-pair/master/docs/presentation-large.gif)
 
-### Installing (not yet avaible at apm)
+![remote-pair](https://raw.githubusercontent.com/motepair/motepair/master/docs/presentation-large.gif)
+
+### How it Works
+We’ve done a basic integration with  [Share.js](http://sharejs.org/) to allow concurrent editing via OT and bind some Atom events to a websocket, like opening/closing/saving files.
+
+### Installing
 
 Use the Atom package manager, which can be found in the Settings view or
-run `apm install #{name to be chosen}` from the command line.
+run `apm install motepair` from the command line.
+
+
+### Using
+Open the project to start collaborating via the `Motepair:connect` command
+(you can trigger this command via Cmd+Shift+P).
+
+Please make sure that peers to open the same project directory. This is a very important step as we rely on the relative project path to identify the correct file.
 
 ### Current Status
 Features:
   - Insertion/Deletion.
-  - Selection.
-  - Open/Close Files.
+  - Open/Close/Switch Files.
   - Save Files.
-  - Create private sessions with only one server.
 
 Current Backlog:
-  - [OT](http://en.wikipedia.org/wiki/Operational_transformation).
-  - Error Handling.
-  - Clipboard sharing.
-  - Change server from nodejs to elixir.
-  
+  - Selection
+  - Multiple Cursors
+  - Peers Indication
+  - Encrypted Connection
 
 ### Development
 * Create a branch with your feature/fix.
-* Add a spec (take inspiration from the ones that are already there).
+* Add a specs
 * Create a PR.
 
-Check out the [server repository](https://github.com/leonmaia/atom-remote-pair-server)
+### Warning
+The connection right now it is not encrypted if you have problems with that, please do not use it. That is part of the backlog.
+
+Be aware that this package is still in development, so it can be unstable, we are working hard to make the Remote Pair programming a better experience to all.
+
+Please, if you see any bug, don't hesitate and open a Issue, we need your help to improve the code and fix all the bugs.
+
+Check out the [server repository](https://github.com/motepair/motepair-server)
