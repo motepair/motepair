@@ -47,8 +47,8 @@ Check out the [server repository](https://github.com/motepair/motepair-server)
 
 ## Contributors
 
-* Leon Maia ([@leonmaia](https://twitter.com/leonmaia))
-* Luiz Filho ([@luizfilho](http://twitter.com/luizbafilho))
+* [Leon Maia](http://github.com/leonmaia) ([@leonmaia](https://twitter.com/leonmaia))
+* [Luiz Filho](http://github.com/luizbafilho) ([@luizbafilho](http://twitter.com/luizbafilho))
 
 ## License
 
