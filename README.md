@@ -44,3 +44,12 @@ Be aware that this package is still in development, so it can be unstable, we ar
 Please, if you see any bug, don't hesitate and open a Issue, we need your help to improve the code and fix all the bugs.
 
 Check out the [server repository](https://github.com/motepair/motepair-server)
+
+## Contributors
+
+* Leon Maia ([@leonmaia](https://twitter.com/leonmaia))
+* Luiz Filho ([@luizfilho](http://twitter.com/luizbafilho))
+
+## License
+
+GPL v3 License. &copy; 2014 Leon Maia & Luiz Filho
