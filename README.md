@@ -1,5 +1,7 @@
 # Remote Pairing package
 
+[![Join the chat at https://gitter.im/motepair/motepair](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/motepair/motepair?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Remote pair programming tool for Atom. Lag free!
 
 ![remote-pair](https://raw.githubusercontent.com/motepair/motepair/master/docs/presentation-large.gif)
