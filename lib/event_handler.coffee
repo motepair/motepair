@@ -1,5 +1,5 @@
 {EventEmitter}        = require 'events'
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable, Range, Point} = require 'atom'
 
 class EventHandler
 
@@ -25,9 +25,19 @@ class EventHandler
     @workspace.getPaneItems().forEach (item) ->
       item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
 
+  onselect: (data) ->
+    editor = atom.workspace.activePaneItem
+    editor.selectionMarker?.destroy()
+    unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
+      editor.selectionMarker = editor.markBufferRange Range.fromObject(data.select), invalidate: 'never'
+      editor.decorateMarker editor.selectionMarker, type: 'highlight', class: 'mp-selection'
+
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
 
+    @sendMessage data
+
+  sendMessage: (data) ->
     try
       @remoteClient.send JSON.stringify(data)
     catch e
@@ -47,6 +57,18 @@ class EventHandler
 
       @subscriptions.add buffer.onDidChange (event) =>
         editor.setCursorScreenPosition(event.newRange.end)
+
+      @subscriptions.add editor.onDidChangeSelectionRange (event) =>
+        data = {
+          a: 'meta',
+          type: 'select',
+          data: {
+            file: @project.relativize(editor.getPath()),
+            select: event.newScreenRange
+          }
+        }
+
+        @sendMessage data
 
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
