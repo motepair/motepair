@@ -27,6 +27,7 @@ class EventHandler
 
   onselect: (data) ->
     editor = atom.workspace.activePaneItem
+    return unless editor?
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
       editor.selectionMarker = editor.markBufferRange Range.fromObject(data.select), invalidate: 'never'
