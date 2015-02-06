@@ -3,6 +3,7 @@ AtomShare    = require './atom_share'
 WebSocket    = require 'ws'
 NewSessionView = require './new-session-view'
 SessionView = require './session-view'
+CursorView = require './cursor-view'
 
 module.exports =
   ### Public ###
@@ -32,6 +33,11 @@ module.exports =
     @setDefaultValues()
     atom.workspaceView.command "motepair:connect", => @startSession()
     atom.workspaceView.command "motepair:disconnect", => @deactivate()
+    atom.workspaceView.command "motepair:cursor", => @cursor()
+
+  cursor: ->
+    editor = atom.workspace.activePaneItem
+    cursor = new CursorView editor
 
   startSession: ->
     @view = new NewSessionView()
