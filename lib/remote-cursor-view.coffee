@@ -13,7 +13,7 @@ class RemoteCursorView extends View
 
     @height @lineHeightInPixels
 
-    @editor.onDidChangeCursorPosition (event) => @setCursorPosition(event)
+    # @editor.onDidChangeCursorPosition (event) => @setCursorPosition(event)
 
   setCursorPosition: (newPosition) ->
     position = Point.fromObject(newPosition)
