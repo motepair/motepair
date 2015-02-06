@@ -1,5 +1,6 @@
 {EventEmitter}        = require 'events'
 {CompositeDisposable, Range, Point} = require 'atom'
+RemoteCursorView = require './remote-cursor-view'
 
 class EventHandler
 
@@ -33,6 +34,14 @@ class EventHandler
       editor.selectionMarker = editor.markBufferRange Range.fromObject(data.select), invalidate: 'never'
       editor.decorateMarker editor.selectionMarker, type: 'highlight', class: 'mp-selection'
 
+  oncursor: (data) ->
+    console.log('s -> c:', data.cursor)
+    editor = atom.workspace.activePaneItem
+    return unless editor?
+
+    if editor.remoteCursor?
+      editor.remoteCursor.setCursorPosition(data.cursor)
+
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
 
@@ -54,9 +63,30 @@ class EventHandler
 
     @subscriptions.add @workspace.observeTextEditors (editor) =>
 
+      editor.remoteCursor = new RemoteCursorView(editor)
+
       buffer = editor.getBuffer()
 
+      # @subscriptions.add buffer.onDidChange (event) =>
+      #   # editor.remoteCursor?.setCursorPosition(event.newRange.end)
+
+      @subscriptions.add editor.onDidChangeCursorPosition (event) =>
+        return if event.textChanged
+
+        data = {
+          a: 'meta',
+          type: 'cursor',
+          data: {
+            file: @project.relativize(editor.getPath()),
+            cursor: event.newScreenPosition
+          }
+        }
+        console.log("c -> s", event.newScreenPosition)
+        @sendMessage data
+
       @subscriptions.add editor.onDidChangeSelectionRange (event) =>
+        return if Point.fromObject(event.newScreenRange.start).isEqual(Point.fromObject(event.newScreenRange.end))
+
         data = {
           a: 'meta',
           type: 'select',

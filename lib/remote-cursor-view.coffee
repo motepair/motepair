@@ -1,6 +1,6 @@
 {View, Point} = require 'atom'
 
-class CursorView extends View
+class RemoteCursorView extends View
 
   initialize: (@editor) ->
     @marker = @editor.markScreenPosition [0,0]
@@ -15,8 +15,9 @@ class CursorView extends View
 
     @editor.onDidChangeCursorPosition (event) => @setCursorPosition(event)
 
-  setCursorPosition: (event) ->
-    pixelPosition = @editor.pixelPositionForScreenPosition(event.newScreenPosition, true)
+  setCursorPosition: (newPosition) ->
+    position = Point.fromObject(newPosition)
+    pixelPosition = @editor.pixelPositionForScreenPosition(position, true)
     itemHeight    = @element.offsetHeight
     top           = pixelPosition.top + @lineHeightInPixels
 
@@ -26,9 +27,9 @@ class CursorView extends View
     else
       @css transform: 'translate(0, -100%)'
 
-    @marker.setHeadScreenPosition event.newScreenPosition
+    @marker.setHeadScreenPosition position
 
   @content: ->
     @div class: 'mp-cursor'
 
-module.exports = CursorView
+module.exports = RemoteCursorView

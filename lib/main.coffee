@@ -3,7 +3,7 @@ AtomShare    = require './atom_share'
 WebSocket    = require 'ws'
 NewSessionView = require './new-session-view'
 SessionView = require './session-view'
-CursorView = require './cursor-view'
+RemoteCursorView = require './remote-cursor-view'
 
 module.exports =
   ### Public ###
@@ -37,7 +37,7 @@ module.exports =
 
   cursor: ->
     editor = atom.workspace.activePaneItem
-    cursor = new CursorView editor
+    cursor = new RemoteCursorView editor
 
   startSession: ->
     @view = new NewSessionView()
