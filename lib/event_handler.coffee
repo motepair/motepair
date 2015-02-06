@@ -9,6 +9,7 @@ class EventHandler
     @project = atom.project
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
+    @localChange = false
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
@@ -35,7 +36,6 @@ class EventHandler
       editor.decorateMarker editor.selectionMarker, type: 'highlight', class: 'mp-selection'
 
   oncursor: (data) ->
-    console.log('s -> c:', data.cursor)
     editor = atom.workspace.activePaneItem
     return unless editor?
 
@@ -67,8 +67,17 @@ class EventHandler
 
       buffer = editor.getBuffer()
 
-      # @subscriptions.add buffer.onDidChange (event) =>
-      #   # editor.remoteCursor?.setCursorPosition(event.newRange.end)
+      editor.onWillInsertText =>
+        @localChange = true
+
+      editor.onDidStopChanging =>
+        @localChange = false
+
+      @subscriptions.add buffer.onDidChange (event) =>
+        position = Point.fromObject({ row: event.newRange.end.row - 1, column: event.oldText.length })
+
+        unless @localChange
+          editor.remoteCursor?.setCursorPosition(position)
 
       @subscriptions.add editor.onDidChangeCursorPosition (event) =>
         return if event.textChanged
@@ -81,7 +90,7 @@ class EventHandler
             cursor: event.newScreenPosition
           }
         }
-        console.log("c -> s", event.newScreenPosition)
+
         @sendMessage data
 
       @subscriptions.add editor.onDidChangeSelectionRange (event) =>
