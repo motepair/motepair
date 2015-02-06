@@ -56,9 +56,6 @@ class EventHandler
 
       buffer = editor.getBuffer()
 
-      @subscriptions.add buffer.onDidChange (event) =>
-        editor.setCursorScreenPosition(event.newRange.end)
-
       @subscriptions.add editor.onDidChangeSelectionRange (event) =>
         data = {
           a: 'meta',

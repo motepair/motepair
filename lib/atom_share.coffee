@@ -1,5 +1,6 @@
 {allowUnsafeEval} = require 'loophole'
 {CompositeDisposable} = require 'atom'
+shareAtomEditor = require './atom_attacher'
 
 class AtomShare
   constructor: (@ws) ->
@@ -20,18 +21,14 @@ class AtomShare
       @setupDoc(doc, editor)
 
   setupDoc: (doc, editor) ->
-    doc.textArea = document.createElement('textarea')
     doc.subscribe()
-    buffer = editor.getBuffer()
+
     doc.whenReady ->
       unless doc.type?
         doc.create 'text'
       if doc.type and doc.type.name is 'text'
-        doc.attachTextarea(doc.textArea, buffer)
-
-    @subscriptions.add buffer.onDidChange (event) ->
-      doc.textArea.value = buffer.getText()
-      doc.textArea.dispatchEvent(new Event('textInput'))
+        ctx = doc.createContext() unless ctx?
+        shareAtomEditor(editor, ctx)
 
 
 module.exports = AtomShare
