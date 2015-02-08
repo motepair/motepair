@@ -26,10 +26,10 @@ Features:
   - Insertion/Deletion.
   - Open/Close/Switch Files.
   - Save Files.
+  - Selection
+  - Remote Cursor
 
 Current Backlog:
-  - Selection
-  - Multiple Cursors
   - Peers Indication
   - Encrypted Connection
 
