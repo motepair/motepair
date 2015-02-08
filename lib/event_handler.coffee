@@ -1,6 +1,7 @@
 {EventEmitter}        = require 'events'
 {CompositeDisposable, Range, Point, TextEditor} = require 'atom'
 RemoteCursorView = require './remote-cursor-view'
+fs = require 'fs'
 
 class EventHandler
 
@@ -13,6 +14,7 @@ class EventHandler
 
   onopen: (data) ->
     path = "#{@project.getPaths()[0]}/#{data.file}"
+    return unless fs.existsSync(path)
     @workspace.open(path)
 
   onclose: (data) ->
