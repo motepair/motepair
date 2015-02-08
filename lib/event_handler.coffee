@@ -30,7 +30,7 @@ class EventHandler
       item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
 
   onselect: (data) ->
-    editor = atom.workspace.activePaneItem
+    editor = atom.workspace.getActivePaneItem()
     return unless editor?
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
@@ -38,11 +38,11 @@ class EventHandler
       editor.decorateMarker editor.selectionMarker, type: 'highlight', class: 'mp-selection'
 
   oncursor: (data) ->
-    editor = atom.workspace.activePaneItem
+    editor = atom.workspace.getActivePaneItem()
     return unless editor?
+    editor.remoteCursor?.marker.destroy()
 
-    if editor.remoteCursor?
-      editor.remoteCursor.setCursorPosition(data.cursor)
+    editor.remoteCursor = new RemoteCursorView(editor, data.cursor)
 
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
@@ -64,8 +64,6 @@ class EventHandler
         @["on#{event.type}"](event.data)
 
     @subscriptions.add @workspace.observeTextEditors (editor) =>
-
-      editor.remoteCursor = new RemoteCursorView(editor)
 
       buffer = editor.getBuffer()
 
@@ -122,6 +120,8 @@ class EventHandler
 
     @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
       return unless event.item.getPath?()?
+
+      event.item.detachShareJsDoc()
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
