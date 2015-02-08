@@ -43,6 +43,7 @@ class EventHandler
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor)
+    editor.scrollToBufferPosition(data.cursor, {center: true});
 
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
