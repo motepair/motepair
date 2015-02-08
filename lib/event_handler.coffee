@@ -115,7 +115,7 @@ class EventHandler
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
     @subscriptions.add @workspace.onDidOpen (event) =>
-      return if event.uri.indexOf('undefined') >= 0 or event.uri is 'atom://config'
+      return if event.uri.indexOf('undefined') >= 0 or event.uri.match /atom:\/\//
       @sendFileEvents('open', event.uri)
 
     @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
