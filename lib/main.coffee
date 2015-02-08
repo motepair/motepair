@@ -31,9 +31,8 @@ module.exports =
 
   activate: ->
     @setDefaultValues()
-    atom.workspaceView.command "motepair:connect", => @startSession()
-    atom.workspaceView.command "motepair:disconnect", => @deactivate()
-    atom.workspaceView.command "motepair:cursor", => @cursor()
+    atom.commands.add 'atom-workspace', "motepair:connect", => @startSession()
+    atom.commands.add 'atom-workspace', "motepair:disconnect", => @deactivate()
 
   startSession: ->
     @view = new NewSessionView()

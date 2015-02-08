@@ -1,10 +1,10 @@
-{View} = require 'atom'
+{View} = require 'atom-space-pen-views'
 
 module.exports =
 
 class SessionView extends View
   initialize: ->
-    @subscribe this, 'click', =>
+    @on 'click', =>
       atom.clipboard.write(@session)
 
   @content: ->

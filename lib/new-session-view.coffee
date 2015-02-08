@@ -1,8 +1,8 @@
-{View, EditorView} = require 'atom'
+{View, TextEditorView} = require 'atom-space-pen-views'
 crypto = require 'crypto'
 
 module.exports =
-  
+
 class NewSessionView extends View
 
   initialize: ->
@@ -15,7 +15,7 @@ class NewSessionView extends View
   @content: ->
     @div class: 'firepad overlay from-top mini', =>
       @p 'Session ID'
-      @subview 'miniEditor', new EditorView(mini: true)
+      @subview 'miniEditor', new TextEditorView(mini: true)
       @div 'Enter a string to identify this share session'
 
   show: ->

@@ -1,4 +1,5 @@
-{View, Point} = require 'atom'
+{Point} = require 'atom'
+{View} = require 'atom-space-pen-views'
 
 class RemoteCursorView extends View
 
