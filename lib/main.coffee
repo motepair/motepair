@@ -35,10 +35,6 @@ module.exports =
     atom.workspaceView.command "motepair:disconnect", => @deactivate()
     atom.workspaceView.command "motepair:cursor", => @cursor()
 
-  cursor: ->
-    editor = atom.workspace.activePaneItem
-    cursor = new RemoteCursorView editor
-
   startSession: ->
     @view = new NewSessionView()
     @view.show()

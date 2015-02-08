@@ -1,5 +1,5 @@
 {EventEmitter}        = require 'events'
-{CompositeDisposable, Range, Point} = require 'atom'
+{CompositeDisposable, Range, Point, TextEditor} = require 'atom'
 RemoteCursorView = require './remote-cursor-view'
 
 class EventHandler
@@ -67,6 +67,13 @@ class EventHandler
 
       buffer = editor.getBuffer()
 
+      editor.backspace = (args) ->
+        this.emit('will-backspace', args)
+        TextEditor.prototype.backspace.call(this, args)
+
+      editor.on 'will-backspace', (event) =>
+        @localChange = true
+
       editor.onWillInsertText =>
         @localChange = true
 
@@ -74,7 +81,7 @@ class EventHandler
         @localChange = false
 
       @subscriptions.add buffer.onDidChange (event) =>
-        position = Point.fromObject({ row: event.newRange.end.row - 1, column: event.oldText.length })
+        position = event.newRange.end
 
         unless @localChange
           editor.remoteCursor?.setCursorPosition(position)

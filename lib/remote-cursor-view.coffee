@@ -3,7 +3,7 @@
 class RemoteCursorView extends View
 
   initialize: (@editor) ->
-    @marker = @editor.markScreenPosition [0,0]
+    @marker = @editor.markBufferPosition [0,0]
     @decoration = @editor.decorateMarker @marker,
       type: 'overlay',
       item: this,
@@ -13,7 +13,7 @@ class RemoteCursorView extends View
 
     @height @lineHeightInPixels
 
-    # @editor.onDidChangeCursorPosition (event) => @setCursorPosition(event)
+    @setCursorPosition({row: 0, column: 0})
 
   setCursorPosition: (newPosition) ->
     position = Point.fromObject(newPosition)
@@ -27,7 +27,7 @@ class RemoteCursorView extends View
     else
       @css transform: 'translate(0, -100%)'
 
-    @marker.setHeadScreenPosition position
+    @marker.setHeadBufferPosition position
 
   @content: ->
     @div class: 'mp-cursor'
