@@ -4,7 +4,7 @@
 
 Remote pair programming tool for Atom. Lag free!
 
-![remote-pair](https://raw.githubusercontent.com/motepair/motepair/master/docs/presentation-large.gif)
+![remote-pair](https://raw.githubusercontent.com/motepair/motepair/master/docs/motepair.gif)
 
 ### How it Works
 We’ve done a basic integration with  [Share.js](http://sharejs.org/) to allow concurrent editing via OT and bind some Atom events to a websocket, like opening/closing/saving files.
