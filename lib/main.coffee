@@ -43,10 +43,13 @@ module.exports =
 
   setupHeartbeat: ->
     id = setInterval =>
-      @ws.send 'ping', (error) ->
-        if error?
-          clearInterval(id)
-    , 30000
+      try
+        @ws.send 'ping', (error) ->
+          if error?
+            clearInterval(id)
+        , 30000
+      catch error
+        clearInterval(id)
 
   connect: (sessionId)->
 
