@@ -44,19 +44,21 @@ module.exports =
   setupHeartbeat: ->
     id = setInterval =>
       try
-        @ws.send 'ping', (error) ->
+        @ws.send 'ping', (error) =>
           if error?
+            @event_handler.emitter.emit 'socket-not-opened'
             clearInterval(id)
-        , 30000
       catch error
+        @event_handler.emitter.emit 'socket-not-opened'
         clearInterval(id)
+    , 30000
 
   connect: (sessionId)->
 
     @ws ?= @createSocketConnection()
 
     @ws.on "open", =>
-      console.log("Connected")
+      atom.notifications.addSuccess("Motepair: Session started.")
       @setupHeartbeat()
       @atom_share = new AtomShare(@ws)
       @atom_share.start(sessionId)
@@ -65,6 +67,7 @@ module.exports =
       @event_handler.listen()
 
       @event_handler.emitter.on 'socket-not-opened', =>
+        atom.notifications.addWarning("Motepair: Connection get lost.")
         @deactivate()
 
       @sessionStatusView = new SessionView
@@ -72,6 +75,7 @@ module.exports =
 
     @ws.on 'error', (e) =>
       console.log('error', e)
+      atom.notifications.addError("Motepair: Could not connect to server.")
       @ws.close()
       @ws = null
 
