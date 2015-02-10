@@ -42,15 +42,15 @@ module.exports =
       @connect(@view.miniEditor.getText())
 
   setupHeartbeat: ->
-    id = setInterval =>
+    @heartbeatId = setInterval =>
       try
         @ws.send 'ping', (error) =>
           if error?
             @event_handler.emitter.emit 'socket-not-opened'
-            clearInterval(id)
+            clearInterval(@heartbeatId)
       catch error
         @event_handler.emitter.emit 'socket-not-opened'
-        clearInterval(id)
+        clearInterval(@heartbeatId)
     , 30000
 
   connect: (sessionId)->
@@ -81,6 +81,8 @@ module.exports =
 
 
   deactivate: ->
+    clearInterval(@heartbeatId)
+    atom.notifications.addSuccess("Motepair: Disconnected from session.")
     @sessionStatusView?.hide()
     @ws?.close()
     @ws = null
