@@ -39,11 +39,11 @@ class EventHandler
 
   oncursor: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor?
+    return unless editor? and editor.markBufferPosition?
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor)
-    editor.scrollToBufferPosition(data.cursor, {center: true});
+    editor.scrollToBufferPosition(data.cursor, {center: true})
 
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
