@@ -19,5 +19,6 @@ class NewSessionView extends View
       @div 'Enter a string to identify this share session'
 
   show: ->
-    atom.workspaceView.append(this)
+    workspaceView = atom.views.getView(atom.workspace)
+    workspaceView.appendChild(@[0])
     @miniEditor.focus()

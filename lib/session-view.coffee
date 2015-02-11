@@ -15,7 +15,8 @@ class SessionView extends View
   show: (session)->
     @session = session
     @id.text session
-    atom.workspaceView.statusBar.appendLeft(this)
+    statusBar = document.querySelector('status-bar')
+    statusBar.addLeftTile({item: this})
 
   hide: ->
     @detach()
