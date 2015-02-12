@@ -5,6 +5,8 @@ NewSessionView = require './new-session-view'
 SessionView = require './session-view'
 RemoteCursorView = require './remote-cursor-view'
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
 module.exports =
   ### Public ###
 
@@ -27,7 +29,7 @@ module.exports =
 
   createSocketConnection: ->
     @setDefaultValues()
-    new WebSocket("http://#{@address}:#{@portNumber}")
+    new WebSocket("wss://#{@address}:#{@portNumber}")
 
   activate: ->
     @setDefaultValues()
