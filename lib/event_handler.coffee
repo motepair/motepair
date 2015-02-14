@@ -1,7 +1,7 @@
-{EventEmitter}        = require 'events'
-{CompositeDisposable, Range, Point, TextEditor} = require 'atom'
-RemoteCursorView = require './remote-cursor-view'
-fs = require 'fs'
+{ EventEmitter }                                  = require 'events'
+{ CompositeDisposable, Range, Point, TextEditor } = require 'atom'
+RemoteCursorView                                  = require './remote-cursor-view'
+fs                                                = require 'fs'
 
 class EventHandler
 
@@ -26,8 +26,11 @@ class EventHandler
     @workspace.getActivePane().destroyItem closedItem
 
   onsave: (data) ->
+    path = "#{@project.getPaths()[0]}/#{data.file}"
     @workspace.getPaneItems().forEach (item) ->
       item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+    @workspace.open(path) unless fs.existsSync(path) # if saved should add to project if it does not exists already.
+
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
