@@ -29,8 +29,8 @@ class EventHandler
     path = "#{@project.getPaths()[0]}/#{data.file}"
     @workspace.getPaneItems().forEach (item) ->
       item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
-    @workspace.open(path) unless fs.existsSync(path) # if saved should add to project if it does not exists already.
-
+    # if saved should add to project if it does not exists already.
+    @workspace.open(path) if !fs.existsSync(path) and data.file[0] != "/"
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
