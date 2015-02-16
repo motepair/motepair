@@ -22,14 +22,22 @@ module.exports =
       title: 'Server port number'
       type: 'integer'
       default: 80
+    secureConnection:
+      title: 'Secure Connection'
+      type: 'boolean'
+      default: false
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
     @portNumber = atom.config.get('motepair.serverPort')
+    @secureConnection = atom.config.get('motepair.secureConnection')
 
   createSocketConnection: ->
     @setDefaultValues()
-    new WebSocket("wss://#{@address}:#{@portNumber}")
+
+    proto = if @secureConnection then 'wss' else 'ws'
+
+    new WebSocket("#{proto}://#{@address}:#{@portNumber}")
 
   activate: ->
     @setDefaultValues()
