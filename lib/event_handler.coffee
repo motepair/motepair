@@ -8,13 +8,13 @@ class EventHandler
   constructor: (@remoteClient) ->
     @emitter = new EventEmitter
     @project = atom.project
+    @projectPath = @project.getPaths()[0]
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
 
   onopen: (data) ->
-    path = "#{@project.getPaths()[0]}/#{data.file}"
-    return unless fs.existsSync(path)
+    path = "#{@projectPath}/#{data.file}"
     @workspace.open(path)
 
   onclose: (data) ->
@@ -26,11 +26,8 @@ class EventHandler
     @workspace.getActivePane().destroyItem closedItem
 
   onsave: (data) ->
-    path = "#{@project.getPaths()[0]}/#{data.file}"
     @workspace.getPaneItems().forEach (item) ->
       item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
-    # if saved should add to project if it does not exists already.
-    @workspace.open(path) if !fs.existsSync(path) and data.file[0] != "/"
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
@@ -119,7 +116,8 @@ class EventHandler
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 
     @subscriptions.add @workspace.onDidOpen (event) =>
-      return if event.uri.indexOf('undefined') >= 0 or event.uri.match /atom:\/\//
+      return if (event.uri.indexOf('undefined') >= 0) or event.uri.match(/atom:\/\//) or (event.uri.match(new RegExp(@projectPath)) is null)
+
       @sendFileEvents('open', event.uri)
 
     @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
@@ -129,7 +127,8 @@ class EventHandler
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
-      return unless event? and event.getPath? and event.getPath()?
+      return unless event? and event.getPath? and event.getPath()? and event.getPath().match(new RegExp(@projectPath)) isnt null
+
       @sendFileEvents('open', event.getPath())
 
 
