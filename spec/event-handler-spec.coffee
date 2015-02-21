@@ -28,7 +28,7 @@ describe "EventHandler", ->
 
       it "should receive the file path correctly", ->
         root_path = "/home/user/project"
-        spyOn(@event_handler.project, 'getPaths').andReturn([root_path])
+        @event_handler.projectPath = root_path
         spyOn(@event_handler.workspace, 'open').andCallThrough()
 
         data = { a: 'meta', type:'open', data: { file: "lib/main.coffee" } }
@@ -69,7 +69,11 @@ describe "EventHandler", ->
     beforeEach ->
       spyOn(@event_handler.project, 'relativize').andReturn('lib/main.coffee')
       spyOn(@ws, 'send')
+
       @event = jasmine.createSpyObj(event, ['uri', 'path', 'item', 'getPath'])
+
+      @event_handler.projectPath = '/home/user/project'
+      @event.uri = '/home/user/project/lib/main.coffee'
 
     describe "::onDidOpen", ->
       it "should send the proper data through the socket", ->
@@ -79,18 +83,53 @@ describe "EventHandler", ->
 
         expect(@ws.send).toHaveBeenCalledWith(JSON.stringify(data))
 
+      it "should not send untitled files", ->
+        @event.uri = 'untitled'
+        @event_handler.workspace.emitter.emit 'did-open', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
+      it "should not send atom config tabs", ->
+        @event.uri = 'atom://settings'
+        @event_handler.workspace.emitter.emit 'did-open', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
+      it "should not send outside project files", ->
+        @event.uri = '/etc/hosts'
+        @event_handler.workspace.emitter.emit 'did-open', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
     describe "::onWillDestroyPaneItem", ->
       it "should send the proper data through the socket", ->
-        @event.item.getPath = ->
-          return "lib/main.coffee"
+        @event.item.getPath = -> return "lib/main.coffee"
+        @event.item.detachShareJsDoc = ->
+
         data = { a: 'meta', type:'close', data: { file: 'lib/main.coffee' } }
 
         @event_handler.workspace.paneContainer.emitter.emit 'will-destroy-pane-item', @event
 
         expect(@ws.send).toHaveBeenCalledWith(JSON.stringify(data))
 
+      it "should not send untitled", ->
+        @event.item.getPath = null
+
+        @event_handler.workspace.paneContainer.emitter.emit 'will-destroy-pane-item', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
+      it "should not send atom config tabs", ->
+        @event.item.getPath = -> return undefined
+
+        @event_handler.workspace.paneContainer.emitter.emit 'will-destroy-pane-item', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
     describe "::onDidChangeActivePaneItem", ->
       it "should send the proper data through the socket", ->
+        @event.getPath = -> return '/home/user/project/lib/main.coffee'
+
         data = { a: 'meta', type:'open', data: { file: 'lib/main.coffee' } }
 
         @event_handler.workspace.paneContainer.emitter.emit 'did-change-active-pane-item', @event
@@ -100,6 +139,25 @@ describe "EventHandler", ->
       it "should return if not event is passed", ->
         @event_handler.workspace.paneContainer.emitter.emit 'did-change-active-pane-item'
 
-        expect(@ws.send).not.toHaveBeenCalled()        
+        expect(@ws.send).not.toHaveBeenCalled()
 
+      it "should not send atom config tabs", ->
+        @event.getPath = null
 
+        @event_handler.workspace.paneContainer.emitter.emit 'did-change-active-pane-item', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
+      it "should not send untitled", ->
+        @event.getPath = -> return undefined
+
+        @event_handler.workspace.paneContainer.emitter.emit 'did-change-active-pane-item', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
+
+      it "should not outside project files", ->
+        @event.getPath = -> return '/etc/hosts'
+
+        @event_handler.workspace.paneContainer.emitter.emit 'did-change-active-pane-item', @event
+
+        expect(@ws.send).not.toHaveBeenCalled()
