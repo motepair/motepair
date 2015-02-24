@@ -29,7 +29,7 @@ module.exports =
     userEmail:
       title: 'Email address'
       type: 'string'
-      default: '(undefined)'
+      default: ''
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
