@@ -92,9 +92,12 @@ module.exports =
 
   deactivate: ->
     clearInterval(@heartbeatId)
-    atom.notifications.addSuccess("Motepair: Disconnected from session.")
-    @sessionStatusView?.hide()
-    @ws?.close()
-    @ws = null
-    @event_handler?.subscriptions.dispose()
-    @atom_share?.subscriptions.dispose()
+    if @ws?
+      atom.notifications.addSuccess("Motepair: Disconnected from session.")
+      @sessionStatusView.hide()
+      @ws.close()
+      @ws = null
+      @event_handler.subscriptions.dispose()
+      @atom_share.subscriptions.dispose()
+    else
+      atom.notifications.addWarning("Motepair: No active session found.")
