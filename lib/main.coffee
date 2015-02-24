@@ -26,6 +26,10 @@ module.exports =
       title: 'Secure Connection'
       type: 'boolean'
       default: false
+    userEmail:
+      title: 'Email address'
+      type: 'string'
+      default: '(undefined)'
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
