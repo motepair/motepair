@@ -1,9 +1,10 @@
 {Point} = require 'atom'
 {View} = require 'atom-space-pen-views'
+crypto = require 'crypto'
 
 class RemoteCursorView extends View
 
-  initialize: (@editor, position) ->
+  initialize: (@editor, position, userEmail) ->
     @marker = @editor.markBufferPosition Point.fromObject(position)
     @decoration = @editor.decorateMarker @marker,
       type: 'overlay',
@@ -15,6 +16,8 @@ class RemoteCursorView extends View
     @height @lineHeightInPixels
 
     @setCursorPosition(position)
+
+    @setGravatar(userEmail, Math.round(1.5*@lineHeightInPixels))
 
   setCursorPosition: (newPosition) ->
     position      = Point.fromObject(newPosition)
@@ -30,7 +33,17 @@ class RemoteCursorView extends View
 
     @marker.setHeadBufferPosition position
 
+  setGravatar: (email, size) ->
+    return unless email.length>0
+    
+    md5 = crypto.createHash('md5')
+    emailHash = md5.update(email).digest('hex')
+    @gravatar.attr src: "https://s.gravatar.com/avatar/#{emailHash}?s=#{size}"
+    @gravatar.attr alt: email
+    @gravatar.show()
+
   @content: ->
-    @div class: 'mp-cursor'
+    @div class: 'mp-cursor', =>
+      @img class: 'mp-gravatar', outlet: 'gravatar'
 
 module.exports = RemoteCursorView

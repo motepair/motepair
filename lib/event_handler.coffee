@@ -12,6 +12,7 @@ class EventHandler
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
+    @userEmail = atom.config.get('motepair.userEmail')
 
   onopen: (data) ->
     path = "#{@projectPath}/#{data.file}"
@@ -42,7 +43,7 @@ class EventHandler
     return unless editor? and editor.markBufferPosition?
     editor.remoteCursor?.marker.destroy()
 
-    editor.remoteCursor = new RemoteCursorView(editor, data.cursor)
+    editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
     editor.scrollToBufferPosition(data.cursor, {center: true})
 
   sendFileEvents: (type , file) ->
@@ -96,6 +97,7 @@ class EventHandler
           data: {
             file: @project.relativize(editor.getPath()),
             cursor: event.newScreenPosition
+            userEmail: @userEmail
           }
         }
 
