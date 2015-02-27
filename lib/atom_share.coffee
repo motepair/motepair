@@ -1,14 +1,11 @@
-{allowUnsafeEval} = require 'loophole'
 {CompositeDisposable} = require 'atom'
 shareAtomEditor = require './atom_attacher'
 
 class AtomShare
   constructor: (@ws) ->
     @subscriptions = new CompositeDisposable
-    allowUnsafeEval =>
-      @sharejs = require('share').client
-      @sjs = new @sharejs.Connection(@ws)
-      require('./textarea_attach')(@sharejs)
+    @sharejs = require('./share').client
+    @sjs = new @sharejs.Connection(@ws)
 
   start: (sessionId) ->
     @ws.send JSON.stringify({ a: 'meta', type: 'init', sessionId: sessionId })
