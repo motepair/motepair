@@ -34,8 +34,8 @@ class RemoteCursorView extends View
     @marker.setHeadBufferPosition position
 
   setGravatar: (email, size) ->
-    return unless email.length>0
-    
+    return unless email?.length > 0
+
     md5 = crypto.createHash('md5')
     emailHash = md5.update(email).digest('hex')
     @gravatar.attr src: "https://s.gravatar.com/avatar/#{emailHash}?s=#{size}"

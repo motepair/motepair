@@ -12,7 +12,8 @@ class EventHandler
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
-    @userEmail = atom.config.get('motepair.userEmail')
+    @userEmail =  atom.config.get('motepair.userEmail')
+    @lastCursorChange = new Date().getTime()
 
   onopen: (data) ->
     path = "#{@projectPath}/#{data.file}"
@@ -44,7 +45,23 @@ class EventHandler
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
+
+    @setGravatarDuration(editor)
+
     editor.scrollToBufferPosition(data.cursor, {center: true})
+
+  setGravatarDuration: (editor) ->
+    gravatarDelay = 1500
+    now = new Date().getTime()
+
+    if now - @lastCursorChange < gravatarDelay
+      clearInterval @gravatarTimeoutId
+      @gravatarTimeoutId = setTimeout =>
+        editor.remoteCursor?.gravatar.hide(300)
+      , gravatarDelay
+
+    @lastCursorChange = now
+
 
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
@@ -87,6 +104,8 @@ class EventHandler
 
         unless @localChange
           editor.remoteCursor?.setCursorPosition(position)
+          editor.remoteCursor?.gravatar.show()
+          @setGravatarDuration(editor)
 
       @subscriptions.add editor.onDidChangeCursorPosition (event) =>
         return if event.textChanged
