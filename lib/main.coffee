@@ -86,6 +86,7 @@ module.exports =
 
       @sessionStatusView = new SessionView
       @sessionStatusView.show(@view.miniEditor.getText())
+      atom.clipboard.write(@view.miniEditor.getText())
 
     @ws.on 'error', (e) =>
       console.log('error', e)
