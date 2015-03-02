@@ -3,12 +3,21 @@ shareAtomEditor = require './atom_attacher'
 
 class AtomShare
   constructor: (@ws) ->
+    @packageVersion = require('../package.json').version
     @subscriptions = new CompositeDisposable
     @sharejs = require('./share').client
     @sjs = new @sharejs.Connection(@ws)
 
   start: (sessionId) ->
-    @ws.send JSON.stringify({ a: 'meta', type: 'init', sessionId: sessionId })
+    @ws.send JSON.stringify(
+      {
+        a: 'meta',
+        type: 'init',
+        sessionId: sessionId,
+        atomVersion: atom.getVersion(),
+        motepairVersion: @packageVersion
+      }
+    )
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       relativePath = atom.project.relativize(editor.getPath())
