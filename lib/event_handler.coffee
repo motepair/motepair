@@ -36,6 +36,7 @@ class EventHandler
     return unless editor?
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
+      return unless editor.markBufferRange?
       editor.selectionMarker = editor.markBufferRange Range.fromObject(data.select), invalidate: 'never'
       editor.decorateMarker editor.selectionMarker, type: 'highlight', class: 'mp-selection'
 
