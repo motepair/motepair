@@ -28,10 +28,13 @@ Features:
   - Save Files.
   - Selection
   - Remote Cursor
+  - Gravatar
+    - Go to Motepair settings to enable it. Just type your email than your pair will see your photo.
+  - Encrypted Connection (You need to deploy your own [server](https://github.com/motepair/motepair-server) in order to use this feature.)
 
 Current Backlog:
   - Peers Indication
-  - Encrypted Connection
+  - Directory validation
 
 ### Development
 * Create a branch with your feature/fix.
