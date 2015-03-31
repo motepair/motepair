@@ -145,7 +145,7 @@ class EventHandler
     @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
       return unless event.item.getPath?()?
 
-      event.item.detachShareJsDoc()
+      event.item.detachShareJsDoc?()
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
