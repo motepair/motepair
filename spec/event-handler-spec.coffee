@@ -75,32 +75,6 @@ describe "EventHandler", ->
       @event_handler.projectPath = '/home/user/project'
       @event.uri = '/home/user/project/lib/main.coffee'
 
-    describe "::onDidOpen", ->
-      it "should send the proper data through the socket", ->
-        data = { a: 'meta', type:'open', data: { file: 'lib/main.coffee' } }
-
-        @event_handler.workspace.emitter.emit 'did-open', @event
-
-        expect(@ws.send).toHaveBeenCalledWith(JSON.stringify(data))
-
-      it "should not send untitled files", ->
-        @event.uri = 'untitled'
-        @event_handler.workspace.emitter.emit 'did-open', @event
-
-        expect(@ws.send).not.toHaveBeenCalled()
-
-      it "should not send atom config tabs", ->
-        @event.uri = 'atom://settings'
-        @event_handler.workspace.emitter.emit 'did-open', @event
-
-        expect(@ws.send).not.toHaveBeenCalled()
-
-      it "should not send outside project files", ->
-        @event.uri = '/etc/hosts'
-        @event_handler.workspace.emitter.emit 'did-open', @event
-
-        expect(@ws.send).not.toHaveBeenCalled()
-
     describe "::onWillDestroyPaneItem", ->
       it "should send the proper data through the socket", ->
         @event.item.getPath = -> return "lib/main.coffee"
