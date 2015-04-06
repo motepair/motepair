@@ -14,10 +14,15 @@ class EventHandler
     @localChange = false
     @userEmail =  atom.config.get('motepair.userEmail')
     @lastCursorChange = new Date().getTime()
+    @remoteAction = false
 
   onopen: (data) ->
     path = "#{@projectPath}/#{data.file}"
+    @remoteAction = true
     @workspace.open(path)
+    setTimeout =>
+      @remoteAction = false
+    , 300
 
   onclose: (data) ->
     closedItem = null
@@ -25,7 +30,11 @@ class EventHandler
     @workspace.getPaneItems().forEach (item) ->
       closedItem = item if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
 
+    @remoteAction = true
     @workspace.getActivePane().destroyItem closedItem
+    setTimeout =>
+      @remoteAction = false
+    , 300
 
   onsave: (data) ->
     @workspace.getPaneItems().forEach (item) ->
@@ -67,7 +76,8 @@ class EventHandler
   sendFileEvents: (type , file) ->
     data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
 
-    @sendMessage data
+    unless @remoteAction
+      @sendMessage data
 
   sendMessage: (data) ->
     try
@@ -136,11 +146,6 @@ class EventHandler
         @sendMessage data
 
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
-
-    @subscriptions.add @workspace.onDidOpen (event) =>
-      return if (event.uri.indexOf('undefined') >= 0) or event.uri.match(/atom:\/\//) or (event.uri.match(new RegExp(@projectPath)) is null)
-
-      @sendFileEvents('open', event.uri)
 
     @subscriptions.add @workspace.onWillDestroyPaneItem (event) =>
       return unless event.item.getPath?()?
