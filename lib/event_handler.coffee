@@ -98,11 +98,8 @@ class EventHandler
       buffer = editor.getBuffer()
 
       editor.backspace = (args) ->
-        this.emit('will-backspace', args)
-        TextEditor.prototype.backspace.call(this, args)
-
-      editor.on 'will-backspace', (event) =>
         @localChange = true
+        TextEditor.prototype.backspace.call(this, args)
 
       editor.onWillInsertText =>
         @localChange = true
