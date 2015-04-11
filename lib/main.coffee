@@ -52,11 +52,12 @@ module.exports =
     @view = new NewSessionView()
     @view.show()
 
-    @view.on 'core:confirm', =>
-      if @view.miniEditor.getText() isnt ''
-        @connect(@view.miniEditor.getText())
-      else
-        atom.notifications.addWarning("Motepair: Session ID can not be empty.")
+    atom.commands.add '.new-session-view',
+      'core:confirm', =>
+        if @view.miniEditor.getText() isnt ''
+          @connect(@view.miniEditor.getText())
+        else
+          atom.notifications.addWarning("Motepair: Session ID can not be empty.")
 
   setupHeartbeat: ->
     @heartbeatId = setInterval =>
