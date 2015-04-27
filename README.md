@@ -58,3 +58,7 @@ Check out the [server repository](https://github.com/motepair/motepair-server)
 ## License
 
 GPL v3 License. &copy; 2014 Leon Maia & Luiz Filho
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/motepair/motepair/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
