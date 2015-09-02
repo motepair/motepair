@@ -33,7 +33,7 @@ module.exports =
     followMode:
       title: 'Enable Follow mode'
       type: 'boolean'
-      default: false
+      default: true
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
