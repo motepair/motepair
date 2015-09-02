@@ -11,6 +11,11 @@ describe "EventHandler", ->
 
   describe "Remote callbacks", ->
     describe "::onopen", ->
+      beforeEach ->
+        atom.config.set('motepair.syncTabs', true)
+      afterEach ->
+        atom.config.set('motepair.syncTabs', false)
+
       it "should call onopen method", ->
         spyOn(@event_handler, 'onopen')
 
@@ -25,7 +30,6 @@ describe "EventHandler", ->
         @ws.emit 'message', JSON.stringify data
         expect(@event_handler.workspace.open).toHaveBeenCalled()
 
-
       it "should receive the file path correctly", ->
         root_path = "/home/user/project"
         @event_handler.projectPath = root_path
@@ -36,6 +40,11 @@ describe "EventHandler", ->
         expect(@event_handler.workspace.open).toHaveBeenCalledWith("#{root_path}/lib/main.coffee")
 
     describe "::onclose", ->
+      beforeEach ->
+        atom.config.set('motepair.syncTabs', true)
+      afterEach ->
+        atom.config.set('motepair.syncTabs', false)
+
       it "should call onclose method", ->
         spyOn(@event_handler, 'onclose')
 
