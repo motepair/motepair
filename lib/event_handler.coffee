@@ -44,7 +44,7 @@ class EventHandler
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor?
+    return unless editor? and data.file is @project.relativize(editor.getPath())
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
       return unless editor.markBufferRange?
@@ -53,7 +53,7 @@ class EventHandler
 
   oncursor: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.markBufferPosition?
+    return unless editor? and editor.markBufferPosition? and data.file is @project.relativize(editor.getPath())
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
