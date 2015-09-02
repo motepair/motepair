@@ -30,6 +30,10 @@ module.exports =
       title: 'Email address'
       type: 'string'
       default: ''
+    followMode:
+      title: 'Enable Follow mode'
+      type: 'boolean'
+      default: false
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
