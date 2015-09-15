@@ -16,6 +16,8 @@ class EventHandler
     @lastCursorChange = new Date().getTime()
     @remoteAction = false
 
+    @syncTabsEvents = [ 'open', 'close' ]
+
   onopen: (data) ->
     path = "#{@projectPath}/#{data.file}"
     @remoteAction = true
@@ -42,7 +44,7 @@ class EventHandler
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor?
+    return unless editor? and editor.getPath? and data.file is @project.relativize(editor.getPath())
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
       return unless editor.markBufferRange?
@@ -51,7 +53,7 @@ class EventHandler
 
   oncursor: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.markBufferPosition?
+    return unless editor? and editor.getPath? and editor.markBufferPosition? and data.file is @project.relativize(editor.getPath())
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
@@ -66,9 +68,9 @@ class EventHandler
 
     if now - @lastCursorChange < gravatarDelay
       clearInterval @gravatarTimeoutId
-      @gravatarTimeoutId = setTimeout =>
-        editor.remoteCursor?.gravatar.hide(300)
-      , gravatarDelay
+    @gravatarTimeoutId = setTimeout =>
+      editor.remoteCursor?.gravatar.hide(300)
+    , gravatarDelay
 
     @lastCursorChange = now
 
@@ -91,44 +93,27 @@ class EventHandler
       event = JSON.parse(event)
 
       if @["on#{event.type}"]?
-        @["on#{event.type}"](event.data)
+        if atom.config.get('motepair.syncTabs') or event.type not in @syncTabsEvents
+          @["on#{event.type}"](event.data)
 
     @subscriptions.add @workspace.observeTextEditors (editor) =>
 
-      buffer = editor.getBuffer()
-
-      editor.backspace = (args) ->
-        @localChange = true
-        TextEditor.prototype.backspace.call(this, args)
-
-      editor.onWillInsertText =>
-        @localChange = true
-
-      editor.onDidStopChanging =>
-        @localChange = false
-
-      @subscriptions.add buffer.onDidChange (event) =>
-        position = event.newRange.end
-
-        unless @localChange
-          editor.remoteCursor?.setCursorPosition(position)
-          editor.remoteCursor?.gravatar.show()
-          @setGravatarDuration(editor)
-
       @subscriptions.add editor.onDidChangeCursorPosition (event) =>
-        return if event.textChanged
+        return if editor.suppress
 
         data = {
           a: 'meta',
           type: 'cursor',
           data: {
             file: @project.relativize(editor.getPath()),
-            cursor: event.newScreenPosition
+            cursor: event.newBufferPosition
             userEmail: @userEmail
           }
         }
 
-        @sendMessage data
+        setTimeout => # cursor and selection data should be sent after op data
+          @sendMessage data
+        , 0
 
       @subscriptions.add editor.onDidChangeSelectionRange (event) =>
         data = {
@@ -136,11 +121,13 @@ class EventHandler
           type: 'select',
           data: {
             file: @project.relativize(editor.getPath()),
-            select: event.newScreenRange
+            select: event.newBufferRange
           }
         }
 
-        @sendMessage data
+        setTimeout =>
+          @sendMessage data
+        , 0
 
       @subscriptions.add editor.onDidSave (event) => @sendFileEvents('save', event.path)
 

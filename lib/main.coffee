@@ -30,6 +30,10 @@ module.exports =
       title: 'Email address'
       type: 'string'
       default: ''
+    syncTabs:
+      title: 'Sync Tabs'
+      type: 'boolean'
+      default: true
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
