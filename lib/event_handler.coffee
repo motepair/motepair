@@ -12,7 +12,7 @@ class EventHandler
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
-    @userEmail =  atom.config.get('motepair.userEmail')
+    @userEmail = atom.config.get('motepair.userEmail')
     @lastCursorChange = new Date().getTime()
     @remoteAction = false
 
@@ -20,11 +20,17 @@ class EventHandler
 
   onopen: (data) ->
     path = "#{@projectPath}/#{data.file}"
-    @remoteAction = true
-    @workspace.open(path)
-    setTimeout =>
-      @remoteAction = false
-    , 300
+    openedItem = null
+
+    @workspace.getPaneItems().forEach (item) ->
+      openedItem  = item if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+
+    if !openedItem or atom.config.get('motepair.followTabs')
+      @remoteAction = true
+      @workspace.open(path)
+      setTimeout =>
+        @remoteAction = false
+      , 300
 
   onclose: (data) ->
     closedItem = null
@@ -60,7 +66,8 @@ class EventHandler
 
     @setGravatarDuration(editor)
 
-    editor.scrollToBufferPosition(data.cursor, {center: true})
+    if atom.config.get('motepair.followMouse')
+      editor.scrollToBufferPosition(data.cursor, {center: true})
 
   setGravatarDuration: (editor) ->
     gravatarDelay = 1500

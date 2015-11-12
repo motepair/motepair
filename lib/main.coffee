@@ -1,6 +1,6 @@
 EventHandler = require './event_handler'
-AtomShare    = require './atom_share'
-WebSocket    = require 'ws'
+AtomShare = require './atom_share'
+WebSocket = require 'ws'
 NewSessionView = require './new-session-view'
 SessionView = require './session-view'
 RemoteCursorView = require './remote-cursor-view'
@@ -34,6 +34,16 @@ module.exports =
       title: 'Sync Tabs'
       type: 'boolean'
       default: true
+    followTabs:
+      title: 'Follow Tabs'
+      type: 'boolean'
+      default: true
+    followMouse:
+      title: 'Follow Mouse'
+      type: 'boolean'
+      default: true
+
+
 
   setDefaultValues: ->
     @address = atom.config.get('motepair.serverAddress')
