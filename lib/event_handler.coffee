@@ -39,8 +39,12 @@ class EventHandler
     , 300
 
   onsave: (data) ->
-    @workspace.getPaneItems().forEach (item) ->
-      item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+    @remoteAction = true
+    @workspace.getPaneItems().forEach (item) =>
+      item.save() if item.getPath? and item.getPath() is @locateFilePath(data)
+    setTimeout =>
+      @remoteAction = false
+    , 300
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
