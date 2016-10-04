@@ -99,8 +99,7 @@ module.exports =
     @ws.on 'error', (e) =>
       console.log('error', e)
       atom.notifications.addError("Motepair: Could not connect to server.")
-      @ws.close()
-      @ws = null
+      @deactivate()
 
 
   deactivate: ->
