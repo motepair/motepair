@@ -19,7 +19,7 @@ class EventHandler
     @syncTabsEvents = [ 'open', 'close' ]
 
   onopen: (data) ->
-    path = "#{@projectPath}/#{data.file}"
+    path = @locateFilePath(data)
     @remoteAction = true
     @workspace.open(path)
     setTimeout =>
@@ -29,8 +29,8 @@ class EventHandler
   onclose: (data) ->
     closedItem = null
 
-    @workspace.getPaneItems().forEach (item) ->
-      closedItem = item if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+    @workspace.getPaneItems().forEach (item) =>
+      closedItem = item if item.getPath? and item.getPath() is @locateFilePath(data)
 
     @remoteAction = true
     @workspace.getActivePane().destroyItem closedItem
@@ -44,7 +44,7 @@ class EventHandler
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.getPath? and data.file is @project.relativize(editor.getPath())
+    return unless editor? and editor.getPath? and @locateFilePath(data) is editor.getPath()
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
       return unless editor.markBufferRange?
@@ -53,7 +53,7 @@ class EventHandler
 
   oncursor: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.getPath? and editor.markBufferPosition? and data.file is @project.relativize(editor.getPath())
+    return unless editor? and editor.getPath? and editor.markBufferPosition? and @locateFilePath(data) is editor.getPath()
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
@@ -74,6 +74,20 @@ class EventHandler
 
     @lastCursorChange = now
 
+  locateProjectPath: (data) ->
+    if @project.getPaths().length is 0
+      return @project.getPaths()[0]
+
+    for path in @project.getPaths()
+      if path.split('/').pop() is data.filePath[0].split('/').pop()
+        return path
+
+  locateFilePath: (data) ->
+    if data.filePath
+      projectPath = @locateProjectPath(data)
+      return projectPath + '/' + data.filePath[1]
+    else
+      return data.file
 
   sendFileEvents: (type , file) ->
     data = {
