@@ -68,7 +68,7 @@ class EventHandler
 
     if now - @lastCursorChange < gravatarDelay
       clearInterval @gravatarTimeoutId
-    @gravatarTimeoutId = setTimeout =>
+    @gravatarTimeoutId = setTimeout ->
       editor.remoteCursor?.gravatar.hide(300)
     , gravatarDelay
 
