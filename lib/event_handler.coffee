@@ -76,7 +76,14 @@ class EventHandler
 
 
   sendFileEvents: (type , file) ->
-    data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
+    data = {
+      a: 'meta',
+      type: type,
+      data: {
+        file: @project.relativize(file),
+        filePath: @project.relativizePath(file)
+      }
+    }
 
     unless @remoteAction
       @sendMessage data
@@ -106,6 +113,7 @@ class EventHandler
           type: 'cursor',
           data: {
             file: @project.relativize(editor.getPath()),
+            filePath: @project.relativizePath(editor.getPath()),
             cursor: event.newBufferPosition
             userEmail: @userEmail
           }
@@ -121,6 +129,7 @@ class EventHandler
           type: 'select',
           data: {
             file: @project.relativize(editor.getPath()),
+            filePath: @project.relativizePath(editor.getPath()),
             select: event.newBufferRange
           }
         }
