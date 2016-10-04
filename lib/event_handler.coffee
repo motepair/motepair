@@ -165,7 +165,7 @@ class EventHandler
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
-      return unless event? and event.getPath? and event.getPath()? and event.getPath().match(new RegExp(@projectPath)) isnt null
+      return unless event? and event.getPath? and event.getPath()? and @locateProjectPath({ filePath: @project.relativizePath(event.getPath())}) isnt null
 
       @sendFileEvents('open', event.getPath())
 
