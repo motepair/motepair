@@ -8,7 +8,6 @@ class EventHandler
   constructor: (@remoteClient) ->
     @emitter = new EventEmitter
     @project = atom.project
-    @projectPath = @project.getPaths()[0]
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
