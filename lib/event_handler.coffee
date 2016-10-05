@@ -8,7 +8,6 @@ class EventHandler
   constructor: (@remoteClient) ->
     @emitter = new EventEmitter
     @project = atom.project
-    @projectPath = @project.getPaths()[0]
     @workspace = atom.workspace
     @subscriptions = new CompositeDisposable
     @localChange = false
@@ -19,7 +18,7 @@ class EventHandler
     @syncTabsEvents = [ 'open', 'close' ]
 
   onopen: (data) ->
-    path = "#{@projectPath}/#{data.file}"
+    path = @locateFilePath(data)
     @remoteAction = true
     @workspace.open(path)
     setTimeout =>
@@ -29,8 +28,8 @@ class EventHandler
   onclose: (data) ->
     closedItem = null
 
-    @workspace.getPaneItems().forEach (item) ->
-      closedItem = item if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+    @workspace.getPaneItems().forEach (item) =>
+      closedItem = item if item.getPath? and item.getPath() is @locateFilePath(data)
 
     @remoteAction = true
     @workspace.getActivePane().destroyItem closedItem
@@ -39,12 +38,16 @@ class EventHandler
     , 300
 
   onsave: (data) ->
-    @workspace.getPaneItems().forEach (item) ->
-      item.save() if item.getPath? and item.getPath()?.indexOf(data.file) >= 0
+    @remoteAction = true
+    @workspace.getPaneItems().forEach (item) =>
+      item.save() if item.getPath? and item.getPath() is @locateFilePath(data)
+    setTimeout =>
+      @remoteAction = false
+    , 300
 
   onselect: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.getPath? and data.file is @project.relativize(editor.getPath())
+    return unless editor? and editor.getPath? and @locateFilePath(data) is editor.getPath()
     editor.selectionMarker?.destroy()
     unless Point.fromObject(data.select.start).isEqual(Point.fromObject(data.select.end))
       return unless editor.markBufferRange?
@@ -53,7 +56,7 @@ class EventHandler
 
   oncursor: (data) ->
     editor = atom.workspace.getActivePaneItem()
-    return unless editor? and editor.getPath? and editor.markBufferPosition? and data.file is @project.relativize(editor.getPath())
+    return unless editor? and editor.getPath? and editor.markBufferPosition? and @locateFilePath(data) is editor.getPath()
     editor.remoteCursor?.marker.destroy()
 
     editor.remoteCursor = new RemoteCursorView(editor, data.cursor, data.userEmail)
@@ -68,15 +71,36 @@ class EventHandler
 
     if now - @lastCursorChange < gravatarDelay
       clearInterval @gravatarTimeoutId
-    @gravatarTimeoutId = setTimeout =>
+    @gravatarTimeoutId = setTimeout ->
       editor.remoteCursor?.gravatar.hide(300)
     , gravatarDelay
 
     @lastCursorChange = now
 
+  locateProjectPath: (data) ->
+    if @project.getPaths().length is 0
+      return @project.getPaths()[0]
+
+    for path in @project.getPaths()
+      if path.split('/').pop() is data.filePath[0].split('/').pop()
+        return path
+
+  locateFilePath: (data) ->
+    if data.filePath
+      projectPath = @locateProjectPath(data)
+      return projectPath + '/' + data.filePath[1]
+    else
+      return data.file
 
   sendFileEvents: (type , file) ->
-    data = { a: 'meta', type: type, data: { file: @project.relativize(file) } }
+    data = {
+      a: 'meta',
+      type: type,
+      data: {
+        file: @project.relativize(file),
+        filePath: @project.relativizePath(file)
+      }
+    }
 
     unless @remoteAction
       @sendMessage data
@@ -106,6 +130,7 @@ class EventHandler
           type: 'cursor',
           data: {
             file: @project.relativize(editor.getPath()),
+            filePath: @project.relativizePath(editor.getPath()),
             cursor: event.newBufferPosition
             userEmail: @userEmail
           }
@@ -121,6 +146,7 @@ class EventHandler
           type: 'select',
           data: {
             file: @project.relativize(editor.getPath()),
+            filePath: @project.relativizePath(editor.getPath()),
             select: event.newBufferRange
           }
         }
@@ -138,7 +164,7 @@ class EventHandler
       @sendFileEvents('close', event.item.getPath())
 
     @subscriptions.add @workspace.onDidChangeActivePaneItem (event) =>
-      return unless event? and event.getPath? and event.getPath()? and event.getPath().match(new RegExp(@projectPath)) isnt null
+      return unless event? and event.getPath? and event.getPath()? and @locateProjectPath({ filePath: @project.relativizePath(event.getPath())}) isnt null
 
       @sendFileEvents('open', event.getPath())
 

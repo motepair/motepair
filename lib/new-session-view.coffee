@@ -7,6 +7,7 @@ class NewSessionView extends View
 
   initialize: ->
     @miniEditor.setText(crypto.randomBytes(8).toString('hex'))
+    @miniEditor.getModel().selectAll()
     @miniEditor.focus()
 
     atom.commands.add '.new-session-view',

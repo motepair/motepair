@@ -99,18 +99,17 @@ module.exports =
     @ws.on 'error', (e) =>
       console.log('error', e)
       atom.notifications.addError("Motepair: Could not connect to server.")
-      @ws.close()
-      @ws = null
+      @deactivate()
 
 
   deactivate: ->
     clearInterval(@heartbeatId)
     if @ws?
       atom.notifications.addSuccess("Motepair: Disconnected from session.")
-      @sessionStatusView.hide()
+      @sessionStatusView.hide() if @sessionStatusView?
       @ws.close()
       @ws = null
-      @event_handler.subscriptions.dispose()
-      @atom_share.subscriptions.dispose()
+      @event_handler.subscriptions.dispose() if @event_handler?
+      @atom_share.subscriptions.dispose() if @atom_share?
     else
       atom.notifications.addWarning("Motepair: No active session found.")
