@@ -17,7 +17,7 @@ module.exports =
     serverAddress:
       title: 'Server address'
       type: 'string'
-      default: 'wss.motepair.com'
+      default: 'motepair.herokuapp.com'
     serverPort:
       title: 'Server port number'
       type: 'integer'
