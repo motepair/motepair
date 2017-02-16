@@ -21,6 +21,12 @@ Open the project to start collaborating via the `Motepair:connect` command
 
 Please make sure that peers to open the same project directory. This is a very important step as we rely on the relative project path to identify the correct file.
 
+### Deploying Server
+Deploy your own server easily on Heroku. 
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/motepair/motepair-server)
+
+
 ### Current Status
 Features:
   - Insertion/Deletion.
