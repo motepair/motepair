@@ -14,7 +14,10 @@ class EventHandler
     @userEmail =  atom.config.get('motepair.userEmail')
     @lastCursorChange = new Date().getTime()
     @remoteAction = false
-
+    if process.platform is "win32"
+        @seperator = '\\'
+    else
+        @seperator = '/'
     @syncTabsEvents = [ 'open', 'close' ]
 
   onopen: (data) ->
@@ -80,15 +83,24 @@ class EventHandler
   locateProjectPath: (data) ->
     if @project.getPaths().length is 0
       return @project.getPaths()[0]
+    if process.platform is "win32"
+        correctData = data.filePath[0].replace(/\//g, "\\")
+    else
+        correctData = data.filePath[0].replace(/\\/g, "/")
 
     for path in @project.getPaths()
-      if path.split('/').pop() is data.filePath[0].split('/').pop()
+      if path.split(@seperator).pop() is correctData.split(@seperator).pop()
         return path
 
   locateFilePath: (data) ->
+    if process.platform is "win32"
+        correctData = data.filePath[1].replace(/\//g, "\\")
+    else
+        correctData = data.filePath[1]
+
     if data.filePath
       projectPath = @locateProjectPath(data)
-      return projectPath + '/' + data.filePath[1]
+      return projectPath + @seperator + correctData
     else
       return data.file
 
